@@ -1,0 +1,20 @@
+# ---------- .NET 构建产物 ----------
+bin/
+obj/
+*.user
+*.suo
+.vs/
+
+# ---------- 发布产物 ----------
+# 单文件 exe 体积过大（约 68 MB），不适合放进 git，请作为 Release 附件上传
+dist/
+*.pdb
+
+# ---------- 运行期生成的文件 ----------
+# 配置文件里会保存 API Key，绝不入库；需要模板请参考 config.example.json
+config.json
+config.json.*
+elysia*.log
+
+# ---------- 诊断脚本输出 ----------
+shots/

@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- 仅用于系统托盘 NotifyIcon（WinForms 的托盘实现比 WPF 原生方案更稳） -->
+    <UseWindowsForms>true</UseWindowsForms>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <AssemblyName>ElysiaPet</AssemblyName>
+    <RootNamespace>ElysiaPet</RootNamespace>
+    <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
+    <Version>2.0.0</Version>
+    <Product>爱莉希雅桌宠</Product>
+    <AssemblyTitle>爱莉希雅桌宠</AssemblyTitle>
+    <Company>Elysia</Company>
+    <SatelliteResourceLanguages>zh-Hans;en</SatelliteResourceLanguages>
+    <!--
+      平时 dotnet build 不设置 RuntimeIdentifier，避免每次编译都去还原完整运行时包。
+      需要单文件绿色版时，用 README 里的 publish 命令显式传参（脚本已放在项目根目录）。
+    -->
+    <DebugType>embedded</DebugType>
+  </PropertyGroup>
+
+  <!--
+    素材有两种存在方式，加载时优先用同目录的外部文件，找不到才回退到内嵌资源：
+      1. 内嵌（Resource）：保证「只发一个 exe」也能正常显示，不依赖旁边的 Assets 目录；
+      2. 外部文件（None + CopyToOutputDirectory）：想换角色时直接替换同名 GIF 即可，无需重新编译。
+  -->
+  <ItemGroup>
+    <Resource Include="Assets\icon.ico" />
+    <Resource Include="Assets\gifs\*.gif" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="Assets\gifs\**\*.gif" CopyToOutputDirectory="PreserveNewest" />
+    <None Include="Assets\icon.ico" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>

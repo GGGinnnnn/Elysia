@@ -1,0 +1,203 @@
+<ResourceDictionary xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+                    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- ============ 配色（爱莉希雅：粉紫 + 浅奶油底） ============ -->
+    <Color x:Key="AccentColor">#FFE75A7C</Color>
+    <Color x:Key="AccentSoftColor">#FFFFD9E2</Color>
+    <Color x:Key="SidebarColor">#FF322A38</Color>
+    <Color x:Key="SidebarHoverColor">#FF453A4E</Color>
+
+    <SolidColorBrush x:Key="AccentBrush" Color="{StaticResource AccentColor}" />
+    <SolidColorBrush x:Key="AccentSoftBrush" Color="{StaticResource AccentSoftColor}" />
+    <SolidColorBrush x:Key="SidebarBrush" Color="{StaticResource SidebarColor}" />
+    <SolidColorBrush x:Key="SidebarHoverBrush" Color="{StaticResource SidebarHoverColor}" />
+    <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFFFF" />
+    <SolidColorBrush x:Key="CanvasBrush" Color="#FFF7F5F8" />
+    <SolidColorBrush x:Key="LineBrush" Color="#FFE3DEE6" />
+    <SolidColorBrush x:Key="TextBrush" Color="#FF2F2A33" />
+    <SolidColorBrush x:Key="MutedTextBrush" Color="#FF77707C" />
+
+    <!-- ============ 全局字体 ============ -->
+    <FontFamily x:Key="UiFont">Microsoft YaHei UI, Segoe UI, sans-serif</FontFamily>
+
+    <!--
+      注意：全局 TextBlock 样式里【不能】设置 Foreground。
+      一旦设置了，它就属于「样式 Setter」优先级，比通过 TextElement.Foreground 继承下来的值更高，
+      于是像侧边栏导航按钮这种浅色文字会被强制刷成深色 —— 深字配深色背景，字就看不见了。
+      需要统一文字颜色的地方（管理台内容区）改为在页面根元素上设置 Foreground，让子级继承。
+    -->
+    <Style TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+    </Style>
+
+    <!-- 正文默认文字色，用在管理台各页面里（也可直接给容器设 Foreground 让子级继承） -->
+    <Style x:Key="BodyText" TargetType="TextBlock" BasedOn="{StaticResource {x:Type TextBlock}}">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style TargetType="Label">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <!-- ============ 侧边栏导航按钮 ============ -->
+    <Style x:Key="NavButton" TargetType="RadioButton">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="Foreground" Value="#FFEDE7F0" />
+        <Setter Property="Height" Value="46" />
+        <Setter Property="Margin" Value="8,2" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="HorizontalContentAlignment" Value="Left" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="RadioButton">
+                    <Border x:Name="Bd" CornerRadius="8" Background="Transparent" Padding="14,0">
+                        <!--
+                          这里必须用 TextElement.Foreground 显式把前景色传给内容元素。
+                          只写 <Setter Property="Foreground"> 时，模板里 ContentPresenter 生成的
+                          TextBlock 会命中全局 TextBlock 样式的深色前景（深字配深色侧边栏 = 看不清）。
+                        -->
+                        <ContentPresenter VerticalAlignment="Center" HorizontalAlignment="Left"
+                                          TextElement.Foreground="{TemplateBinding Foreground}"
+                                          TextElement.FontFamily="{TemplateBinding FontFamily}"
+                                          TextElement.FontSize="{TemplateBinding FontSize}"
+                                          TextElement.FontWeight="{TemplateBinding FontWeight}" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource SidebarHoverBrush}" />
+                        </Trigger>
+                        <Trigger Property="IsChecked" Value="True">
+                            <Setter TargetName="Bd" Property="Background" Value="{StaticResource AccentBrush}" />
+                            <Setter Property="Foreground" Value="#FFFFFFFF" />
+                            <Setter Property="FontWeight" Value="SemiBold" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- 侧边栏底部说明文字（浅色，配深色背景） -->
+    <Style x:Key="SidebarHintText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="Foreground" Value="#FFB9AEC4" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+        <Setter Property="TextOptions.TextFormattingMode" Value="Display" />
+    </Style>
+
+    <!-- ============ 主按钮 ============ -->
+    <Style x:Key="PrimaryButton" TargetType="Button">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Foreground" Value="White" />
+        <Setter Property="Background" Value="{StaticResource AccentBrush}" />
+        <Setter Property="Padding" Value="16,8" />
+        <Setter Property="Cursor" Value="Hand" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="Button">
+                    <Border x:Name="Bd" CornerRadius="7" Background="{TemplateBinding Background}" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                    </Border>
+                    <ControlTemplate.Triggers>
+                        <Trigger Property="IsMouseOver" Value="True">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.88" />
+                        </Trigger>
+                        <Trigger Property="IsEnabled" Value="False">
+                            <Setter TargetName="Bd" Property="Opacity" Value="0.45" />
+                        </Trigger>
+                    </ControlTemplate.Triggers>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <!-- ============ 次按钮 ============ -->
+    <Style x:Key="GhostButton" TargetType="Button" BasedOn="{StaticResource PrimaryButton}">
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+        <Setter Property="Background" Value="#FFEDEAF0" />
+    </Style>
+
+    <!-- ============ 输入控件 ============ -->
+    <Style x:Key="FieldBox" TargetType="TextBox">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Padding" Value="8,6" />
+        <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="White" />
+        <Setter Property="VerticalContentAlignment" Value="Center" />
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="TextBox">
+                    <Border CornerRadius="6" Background="{TemplateBinding Background}"
+                            BorderBrush="{TemplateBinding BorderBrush}" BorderThickness="{TemplateBinding BorderThickness}">
+                        <ScrollViewer x:Name="PART_ContentHost" Margin="{TemplateBinding Padding}" VerticalAlignment="Center" />
+                    </Border>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+    <Style x:Key="FieldCombo" TargetType="ComboBox">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Height" Value="30" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <Style x:Key="FieldCheck" TargetType="CheckBox">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="Margin" Value="0,6,0,0" />
+        <Setter Property="Foreground" Value="{StaticResource TextBrush}" />
+    </Style>
+
+    <!-- ============ 分区标题 / 说明文字 ============ -->
+    <!-- 这些样式故意不设 Foreground：让它们从页面根元素的 Foreground 继承 -->
+    <Style x:Key="PageTitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="19" />
+        <Setter Property="FontWeight" Value="Bold" />
+        <Setter Property="Margin" Value="0,0,0,4" />
+    </Style>
+
+    <Style x:Key="SectionTitle" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="14" />
+        <Setter Property="FontWeight" Value="SemiBold" />
+        <Setter Property="Margin" Value="0,14,0,6" />
+    </Style>
+
+    <Style x:Key="HintText" TargetType="TextBlock">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="12" />
+        <Setter Property="Foreground" Value="{StaticResource MutedTextBrush}" />
+        <Setter Property="TextWrapping" Value="Wrap" />
+    </Style>
+
+    <Style x:Key="Card" TargetType="Border">
+        <Setter Property="Background" Value="{StaticResource SurfaceBrush}" />
+        <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="CornerRadius" Value="10" />
+        <Setter Property="Padding" Value="16" />
+    </Style>
+
+    <Style TargetType="ListBox">
+        <Setter Property="FontFamily" Value="{StaticResource UiFont}" />
+        <Setter Property="FontSize" Value="13" />
+        <Setter Property="BorderBrush" Value="{StaticResource LineBrush}" />
+        <Setter Property="BorderThickness" Value="1" />
+        <Setter Property="Background" Value="White" />
+    </Style>
+
+    <Style TargetType="ScrollBar">
+        <Setter Property="Width" Value="8" />
+    </Style>
+
+</ResourceDictionary>

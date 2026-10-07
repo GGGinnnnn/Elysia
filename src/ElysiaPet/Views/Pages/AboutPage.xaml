@@ -1,0 +1,40 @@
+<pages:PageBase x:Class="ElysiaPet.Views.Pages.AboutPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pages="clr-namespace:ElysiaPet.Views.Pages"
+             FontFamily="{StaticResource UiFont}"
+             Foreground="{StaticResource TextBrush}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="18,16,18,24">
+        <StackPanel>
+            <TextBlock Text="ℹ️ 关于这个项目" Style="{StaticResource PageTitle}" />
+
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="爱莉希雅桌宠 · ElysiaPet 2.0" FontSize="16" FontWeight="Bold" />
+                    <TextBlock x:Name="VersionText" Style="{StaticResource HintText}" Margin="0,6,0,0" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,10,0,0"
+                               Text="本项目是 dask-pet2（PyQt6 版）的完整重构版本，使用 C# / .NET 10 / WPF 重写。" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="重构带来了什么" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource HintText}" Text="• 分层架构：模型 / 服务 / 视图三块分家，单个文件不再是 1600 行的巨物。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 异步取代线程：HttpClient + async/await 代替每请求一个 QThread，界面永不卡死。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 原子化配置：先写临时文件再替换，并有损坏自动备份，不再出现配置被写坏的情况。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 全量日志：elysia.log 记录运行与错误，打包后也能定位问题。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 无 Python 依赖：编译为单个 exe，目标电脑无需安装 Python 与任何第三方库。" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="运行环境" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock x:Name="RuntimeText" Style="{StaticResource HintText}" />
+                    <TextBlock x:Name="PathText" Style="{StaticResource HintText}" Margin="0,6,0,0" />
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </ScrollViewer>
+</pages:PageBase>

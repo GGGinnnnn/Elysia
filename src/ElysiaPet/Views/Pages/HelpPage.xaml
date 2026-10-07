@@ -1,0 +1,86 @@
+<pages:PageBase x:Class="ElysiaPet.Views.Pages.HelpPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pages="clr-namespace:ElysiaPet.Views.Pages"
+             FontFamily="{StaticResource UiFont}"
+             Foreground="{StaticResource TextBrush}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="18,16,18,24">
+        <StackPanel>
+            <TextBlock Text="❓ 功能说明" Style="{StaticResource PageTitle}" />
+
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="🌸 欢迎来到爱莉希雅的秘密花园 ♪" FontSize="16" FontWeight="Bold"
+                               Foreground="{StaticResource AccentBrush}" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,8,0,0"
+                               Text="美丽、自信又热情的妖精小姐已经入驻你的桌面啦。她不只是会聊天的看板娘，还是你的桌面小管家。" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="✨ 一、视觉与交互" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource HintText}" Text="• 左键单击桌宠：弹出/收起底部快捷输入框；输入框 10 秒无操作会自动收起。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 左键按住拖动：把桌宠拖到屏幕任意位置，松手后位置自动记忆。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 右键按住左右拖动：等比例放大/缩小桌宠，气泡和输入框一起变。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 鼠标滚轮：微调大小（每次 10 像素）。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 右键单击：呼出功能菜单，包含你自定义的快捷启动程序。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 气泡正在打字时点一下桌宠：立刻显示全文；再点一下让它提前消失。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 无操作一段时间后自动变透明，鼠标一碰立刻恢复，透明度可调。" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="💬 二、智能对话与情绪联动" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource HintText}" Text="• 在输入框里打字回车即可对话，回复会以打字机效果逐字显示。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 模型在句尾附带的心情标签会自动转成 8 种动态表情：waiting / cry / question / wink / like / speechless / hurry / sleep。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 「系统设置」里可以调整每次对话携带的历史轮数，让她记得住上下文。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 对话历史和自动冒泡记录分开存放，冒泡不会污染模型记忆；左侧列表点右键可删除单条。" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="⏰ 三、报时与日程管家" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource HintText}" Text="• 整点报时：每个小时可配置多条语录，到点随机挑一句，可在「报时设置」页随手试听。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 声控日程：直接对她说「12:00提醒我吃饭」或「15:30提醒我开会」，她会自动记录。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 双重提醒：时间一到，既冒气泡，也会在屏幕中央弹出系统对话框，绝不漏事。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 待机唠嗑：默认 20 分钟无操作冒一次泡，时长与语录都可自定义，也能切换成 AI 即兴生成。" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="🚀 四、斜杠快捷指令" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource HintText}" Text="在输入框里输入「/ + 关键词」并回车，立刻打开 Windows 常用工具：" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• /终端 或 /cmd   ➔ 命令提示符" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• /任务管理器 /设备管理器 /服务 /计算机管理 /事件" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• /控制面板 /注册表 /磁盘清理 /配置诊断 /防火墙" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• /计算器 /记事本 /画图 /网络（或 /网卡设置）" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="💻 五、右键自定义快捷启动" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource HintText}" Text="在「快捷启动」页添加常用软件（Steam、网易云、浏览器……），添加完立刻生效：" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="桌宠右键菜单的顶部会实时列出这些程序，一键秒开。" />
+                </StackPanel>
+            </Border>
+
+            <Border Style="{StaticResource Card}" Margin="0,12,0,0">
+                <StackPanel>
+                    <TextBlock Text="🛠 六、出问题时怎么办" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource HintText}" Text="• 程序目录下的 elysia.log 记录了所有运行日志与错误原因。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 配置文件 config.json 同样位于 exe 旁边，损坏时会自动备份为 config.json.broken-时间戳。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 桌宠跑到屏幕外时：右键托盘图标选「重置位置与强制置顶」。" />
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,5,0,0" Text="• 「系统设置」页的「测试连接」可以单独验证 API Key 是否可用。" />
+                </StackPanel>
+            </Border>
+
+            <TextBlock Style="{StaticResource HintText}" Margin="0,16,0,0" HorizontalAlignment="Right"
+                       Text="“大好的时光，有爱莉希雅陪着你，每分每秒都很特别哦~ ♪”" />
+        </StackPanel>
+    </ScrollViewer>
+</pages:PageBase>

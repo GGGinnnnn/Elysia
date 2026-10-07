@@ -1,0 +1,150 @@
+<pages:PageBase x:Class="ElysiaPet.Views.Pages.SettingsPage"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:pages="clr-namespace:ElysiaPet.Views.Pages"
+             FontFamily="{StaticResource UiFont}"
+             Foreground="{StaticResource TextBrush}">
+    <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="18,16,18,24">
+        <StackPanel>
+            <TextBlock Text="⚙️ 系统设置" Style="{StaticResource PageTitle}" />
+            <TextBlock Style="{StaticResource HintText}"
+                       Text="改动后点击底部「保存并应用」，桌宠会立刻使用新设置，无需重启。" />
+
+            <!-- ============ 模型接入 ============ -->
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="🤖 大模型接入" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+
+                    <TextBlock Text="API Key" Style="{StaticResource HintText}" />
+                    <TextBox x:Name="ApiKeyBox" Style="{StaticResource FieldBox}" Margin="0,3,0,0" />
+
+                    <TextBlock Text="接口地址（兼容 OpenAI 格式即可）" Style="{StaticResource HintText}" Margin="0,10,0,0" />
+                    <TextBox x:Name="ApiUrlBox" Style="{StaticResource FieldBox}" Margin="0,3,0,0" />
+
+                    <TextBlock Text="模型名称" Style="{StaticResource HintText}" Margin="0,10,0,0" />
+                    <TextBox x:Name="ModelBox" Style="{StaticResource FieldBox}" Margin="0,3,0,0" />
+
+                    <TextBlock Text="角色预设（人设提示词）" Style="{StaticResource HintText}" Margin="0,10,0,0" />
+                    <TextBox x:Name="PresetBox" Style="{StaticResource FieldBox}" Margin="0,3,0,0"
+                             Height="110" AcceptsReturn="True" TextWrapping="Wrap"
+                             VerticalContentAlignment="Top" VerticalScrollBarVisibility="Auto" />
+
+                    <TextBlock Text="主人昵称" Style="{StaticResource HintText}" Margin="0,10,0,0" />
+                    <TextBox x:Name="UserNameBox" Style="{StaticResource FieldBox}" Margin="0,3,0,0" />
+
+                    <Button Content="🧪 测试连接" Style="{StaticResource GhostButton}" Width="120"
+                            HorizontalAlignment="Left" Margin="0,12,0,0" Click="OnTestConnection" />
+                    <TextBlock x:Name="TestResultText" Style="{StaticResource HintText}" Margin="0,6,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- ============ 外观与交互 ============ -->
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="🎨 外观与交互" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+
+                    <TextBlock Text="显示层级" Style="{StaticResource HintText}" />
+                    <ComboBox x:Name="LevelCombo" Style="{StaticResource FieldCombo}" Margin="0,3,0,0">
+                        <ComboBoxItem Content="所有应用上方（始终置顶）" />
+                        <ComboBoxItem Content="非全屏应用上方（进入全屏程序时会自动让位）" />
+                        <ComboBoxItem Content="只显示在桌面（普通窗口层级）" />
+                    </ComboBox>
+
+                    <TextBlock Text="桌宠大小（像素，也可以直接右键拖拽桌宠调整）" Style="{StaticResource HintText}" Margin="0,10,0,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                        <Slider x:Name="PetWidthSlider" Minimum="80" Maximum="600" Width="320"
+                                TickFrequency="10" IsSnapToTickEnabled="True" />
+                        <TextBlock x:Name="PetWidthText" Margin="12,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <TextBlock Text="气泡字号" Style="{StaticResource HintText}" Margin="0,10,0,0" />
+                    <StackPanel Orientation="Horizontal" Margin="0,3,0,0">
+                        <Slider x:Name="BubbleFontSlider" Minimum="10" Maximum="24" Width="320"
+                                TickFrequency="1" IsSnapToTickEnabled="True" />
+                        <TextBlock x:Name="BubbleFontText" Margin="12,0,0,0" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <CheckBox x:Name="OpacityCheck" Style="{StaticResource FieldCheck}"
+                              Content="开启「无操作自动透明化」" />
+                    <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+                        <TextBlock Text="无操作" VerticalAlignment="Center" />
+                        <TextBox x:Name="OpacityTimeoutBox" Style="{StaticResource FieldBox}" Width="70" Margin="8,0" />
+                        <TextBlock Text="秒后变透明，透明度" VerticalAlignment="Center" />
+                        <TextBox x:Name="OpacityValueBox" Style="{StaticResource FieldBox}" Width="70" Margin="8,0" />
+                        <TextBlock Text="（0.1 ~ 1.0）" VerticalAlignment="Center" />
+                    </StackPanel>
+                    <TextBlock Style="{StaticResource HintText}" Margin="0,4,0,0"
+                               Text="建议时长不要小于 15 秒：太短会让桌宠一直处于半透明状态，看起来像糊在壁纸上。鼠标移到桌宠身上会立刻恢复全亮。" />
+
+                    <CheckBox x:Name="TrayCheck" Style="{StaticResource FieldCheck}"
+                              Content="显示系统托盘图标（关掉后只能靠右键桌宠打开后台）" />
+                </StackPanel>
+            </Border>
+
+            <!-- ============ 记忆与冒泡 ============ -->
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="🧠 记忆与自动冒泡" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="💬 对话历史最多保留" VerticalAlignment="Center" />
+                        <TextBox x:Name="MaxChatBox" Style="{StaticResource FieldBox}" Width="70" Margin="8,0" />
+                        <TextBlock Text="条" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <TextBlock Text="🍃 冒泡记录最多保留" VerticalAlignment="Center" />
+                        <TextBox x:Name="MaxBubbleBox" Style="{StaticResource FieldBox}" Width="70" Margin="8,0" />
+                        <TextBlock Text="条" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
+                        <TextBlock Text="🔗 每次对话关联最近" VerticalAlignment="Center" />
+                        <TextBox x:Name="ContextBox" Style="{StaticResource FieldBox}" Width="70" Margin="8,0" />
+                        <TextBlock Text="轮历史（不能超过上面的对话条数）" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <StackPanel Orientation="Horizontal" Margin="0,12,0,0">
+                        <TextBlock Text="待机" VerticalAlignment="Center" />
+                        <TextBox x:Name="IdleMinutesBox" Style="{StaticResource FieldBox}" Width="70" Margin="8,0" />
+                        <TextBlock Text="分钟没有任何操作后开始唠嗑（最少 1 分钟）" VerticalAlignment="Center" />
+                    </StackPanel>
+
+                    <CheckBox x:Name="AiIdleCheck" Style="{StaticResource FieldCheck}"
+                              Content="待机时让 AI 即兴生成提示语（关闭则使用本地固定语录，更省流量）" />
+                </StackPanel>
+            </Border>
+
+            <!-- ============ 开机自启动 ============ -->
+            <Border Style="{StaticResource Card}" Margin="0,14,0,0">
+                <StackPanel>
+                    <TextBlock Text="🚀 开机自启动" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Style="{StaticResource HintText}"
+                               Text="两种方式二选一即可。注册表方式写入 HKCU\...\Run；快捷方式方式写入「启动」文件夹，兼容性更好。" />
+
+                    <CheckBox x:Name="AutostartRegCheck" Style="{StaticResource FieldCheck}"
+                              Content="方式一：写入注册表启动项（推荐）" />
+                    <CheckBox x:Name="AutostartLnkCheck" Style="{StaticResource FieldCheck}"
+                              Content="方式二：创建启动文件夹快捷方式" />
+
+                    <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
+                        <Button Content="🔄 刷新当前状态" Style="{StaticResource GhostButton}" Click="OnRefreshAutostart" />
+                    </StackPanel>
+                    <TextBlock x:Name="AutostartStateText" Style="{StaticResource HintText}" Margin="0,8,0,0" />
+                </StackPanel>
+            </Border>
+
+            <!-- ============ 底部操作 ============ -->
+            <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
+                <Button Content="💾 保存并应用" Style="{StaticResource PrimaryButton}" Width="150" Height="38"
+                        Click="OnSave" />
+                <Button Content="↩️ 放弃修改" Style="{StaticResource GhostButton}" Width="120" Height="38"
+                        Margin="12,0,0,0" Click="OnRevert" />
+                <Button Content="🧹 恢复出厂人设与语录" Style="{StaticResource GhostButton}" Width="190" Height="38"
+                        Margin="12,0,0,0" Click="OnRestoreDefaults" />
+                <Button Content="📂 打开配置目录" Style="{StaticResource GhostButton}" Width="140" Height="38"
+                        Margin="12,0,0,0" Click="OnOpenConfigFolder" />
+            </StackPanel>
+        </StackPanel>
+    </ScrollViewer>
+</pages:PageBase>
