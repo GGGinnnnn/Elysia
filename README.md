@@ -42,7 +42,8 @@
 
 ### 下载即用（推荐）
 
-到 [Releases](../../releases) 页面下载 `ElysiaPet.exe`，**双击即可运行**：
+到 **[Releases](https://github.com/GGGinnnnn/Elysia/releases)** 页面下载
+`ElysiaPet-v2.0.0-win-x64.zip`，解压后**双击 `ElysiaPet.exe` 即可运行**：
 
 - 单文件自包含，目标电脑**不需要安装 .NET 运行时**；
 - 8 个 GIF 表情与图标都已内嵌，**单独这一个文件就能跑**；
