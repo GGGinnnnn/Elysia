@@ -2,29 +2,6 @@
 
 把 `dask-pet2`（PyQt6 版桌宠）完整重写为 **C# / .NET 10 / WPF** 的桌面应用。
 
-原项目一行未动，仍保留在 `D:\study\dask-pet2`；这里是一套全新的、可以独立编译运行的项目。
-
----
-
-## 为什么换语言
-
-原来的 Python 版本功能是齐的，但坑集中在三类地方，靠打补丁很难根治：
-
-| 旧版问题 | 新版怎么解决 |
-| --- | --- |
-| 单个 `main.py` **1602 行**，界面、业务、系统调用全混在一起 | 拆成 `Models` / `Services` / `Views` 三层，桌宠窗口按职责分成「生命周期 / 布局 / 气泡 / 输入 / 调度 / 交互」几个区域 |
-| 每个网络请求都新建一个 `QThread`，无取消、无并发保护 | `HttpClient` + `async/await` + `CancellationTokenSource`，连发消息时旧请求会被主动取消 |
-| `except Exception:` 裸捕获、`except: pass`，出错静默 | 精确捕获异常类型 + 全量日志 + 面向用户的中文提示 |
-| `int("五分钟")` 直接抛异常，设置悄悄不保存 | `TextParsers.ExtractInt/ExtractDouble` 抽数字 + `Math.Clamp` 钳制范围 |
-| `json.dump` 直接覆盖配置，写一半崩溃就全丢 | 先写 `.tmp` 再 `File.Replace` 原子替换；损坏的配置自动备份成 `config.json.broken-时间戳` |
-| `requests.post(..., verify=False)` 关掉了证书校验 | 使用 .NET 默认的 TLS 校验，不再弱化安全性 |
-| `change_state("idle")` 指向一个不存在的素材 | `StateToAsset()` 统一映射，未知状态回退 `waiting` |
-| 整点报时要求 `minute==0 and second==0`，定时器抖一下当天就不报时 | 放宽为「整点后 30 秒内只报一次」，用 `lastChimedHour` 去重 |
-| 窗口层级靠比较中文字符串 | `WindowLevel` 枚举 |
-| 管理台页码索引手工顺延，插一页就错位 | `DashboardPage` 枚举 + 字典分页，新增页面不会影响其它页 |
-| 打包后 `print()` 没有任何输出，出问题无从查起 | 运行目录下的 `elysia.log`（自动轮转）+ 全局异常兜底 |
-| 目标机器要装 Python + PyQt6 + requests + pywin32 | 单文件 exe，**零依赖**，双击即用 |
-
 ---
 
 ## 快速开始
@@ -145,8 +122,6 @@ ElysiaPet/
 
 ### 桌宠窗口的布局约定
 
-点击桌宠弹出输入框时，**桌宠本体绝不位移**。实现上有三条硬约束：
-
 1. 窗口高度只由桌宠尺寸决定（气泡与输入框各占一个固定槽位），切换显隐不改变窗口尺寸；
 2. 桌宠的显式宽高由素材宽高比算出并写死在容器上，避免 Auto 行量到 0 高被裁切；
 3. 窗口位置只由桌宠的屏幕坐标反推，布局过程不改写它。
@@ -199,10 +174,6 @@ ElysiaPet.exe --gifframes
 | `tools\diag-drag.ps1` | 启动桌宠后用真实鼠标事件模拟拖拽，逐步打印「窗口位置 / 期望位置 / 偏差」 |
 | `tools\diag-gif.ps1` | 抓取窗口像素判断 GIF 是否真的在动 |
 | `tools\capture-pet.ps1` | 把桌宠窗口画面存成 PNG |
-
-> 注意：抓动画一定要用屏幕 BitBlt，不能用 `PrintWindow` ——
-> 后者对做了透明处理的窗口只会返回一张缓存的静态画面，会误判成「动画不动」。
-
 
 ---
 
