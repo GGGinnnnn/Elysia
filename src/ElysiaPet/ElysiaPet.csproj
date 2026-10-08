@@ -12,7 +12,7 @@
     <AssemblyName>ElysiaPet</AssemblyName>
     <RootNamespace>ElysiaPet</RootNamespace>
     <ApplicationIcon>Assets\icon.ico</ApplicationIcon>
-    <Version>2.0.0</Version>
+    <Version>2.1.0</Version>
     <Product>爱莉希雅桌宠</Product>
     <AssemblyTitle>爱莉希雅桌宠</AssemblyTitle>
     <Company>Elysia</Company>

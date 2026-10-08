@@ -64,7 +64,7 @@ public partial class BubbleHistoryPage : PageBase
         if (BubbleList.SelectedItem is not ListBoxItem { Tag: int index }) return;
 
         var menu = new ContextMenu();
-        var item = new MenuItem { Header = "❌ 删除此条冒泡记录" };
+        var item = new MenuItem { Header = "✖ 删除此条冒泡记录" };
         item.Click += async (_, _) => await DeleteAsync(index);
         menu.Items.Add(item);
         menu.IsOpen = true;

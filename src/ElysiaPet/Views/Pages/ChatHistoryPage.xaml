@@ -11,7 +11,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,12">
-            <TextBlock Text="💬 历史对话" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="❝ 历史对话" Style="{StaticResource PageTitle}" />
             <TextBlock Style="{StaticResource HintText}"
                        Text="与爱莉希雅的每一轮对话都会记录在这里；在左侧列表上点右键可以删除单条记录。" />
         </StackPanel>
@@ -44,9 +44,9 @@
                     <TextBlock x:Name="CountText" Text="0" Margin="4,0" FontWeight="SemiBold"
                                Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" />
                     <TextBlock Text="条记录" VerticalAlignment="Center" />
-                    <Button Content="🗑 清空全部对话" Style="{StaticResource GhostButton}"
+                    <Button Content="✖ 清空全部对话" Style="{StaticResource GhostButton}"
                             Margin="18,0,0,0" Click="OnClearAll" />
-                    <Button Content="📋 复制这条对话" Style="{StaticResource GhostButton}"
+                    <Button Content="❏ 复制这条对话" Style="{StaticResource GhostButton}"
                             Margin="10,0,0,0" Click="OnCopy" />
                 </StackPanel>
             </Grid>

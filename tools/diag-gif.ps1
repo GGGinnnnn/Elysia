@@ -35,8 +35,7 @@ public class GT {
 }
 '@ -ReferencedAssemblies System.Drawing
 
-. (Join-Path $PSScriptRoot 'common.ps1')
-$dir = Get-ElysiaExeDir
+$dir = 'D:\study\ElysiaPet\src\ElysiaPet\bin\Debug\net10.0-windows'
 $exe = Join-Path $dir 'ElysiaPet.exe'
 $log = Join-Path $dir 'elysia.log'
 Remove-Item $log -ErrorAction SilentlyContinue

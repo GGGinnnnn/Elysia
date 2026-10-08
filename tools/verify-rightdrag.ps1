@@ -52,8 +52,7 @@ public class V {
 }
 '@
 
-. (Join-Path $PSScriptRoot 'common.ps1')
-$dir = Get-ElysiaExeDir
+$dir = 'D:\study\ElysiaPet\src\ElysiaPet\bin\Debug\net10.0-windows'
 $log = Join-Path $dir 'elysia.log'
 Remove-Item $log -ErrorAction SilentlyContinue
 

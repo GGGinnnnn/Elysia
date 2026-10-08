@@ -1,5 +1,8 @@
 using System;
 using System.Drawing;
+using DrawingFont = System.Drawing.Font;
+using DrawingFontFamily = System.Drawing.FontFamily;
+using DrawingFontStyle = System.Drawing.FontStyle;
 using System.Windows;
 using System.Windows.Forms;
 using ElysiaPet.Views;
@@ -47,22 +50,29 @@ public sealed class TrayService : IDisposable
             return;
         }
 
-        var menu = new ContextMenuStrip { ShowImageMargin = false };
+        var menu = new ContextMenuStrip
+        {
+            ShowImageMargin = false,
+            Renderer = new ElysiaPet.Controls.PinkMenuRenderer(),
+            BackColor = Color.FromArgb(0xFF, 0xFB, 0xFD),
+            Font = new DrawingFont(new DrawingFontFamily("幼圆"), 10.5f, DrawingFontStyle.Regular, GraphicsUnit.Point),
+            Padding = new Padding(2, 6, 2, 6),
+        };
 
-        var reset = new ToolStripMenuItem("🔄 重置位置与强制置顶");
+        var reset = new ToolStripMenuItem("↻ 重置位置与强制置顶");
         reset.Click += (_, _) => OnUi(() => _host.ResetPosition());
         menu.Items.Add(reset);
         menu.Items.Add(new ToolStripSeparator());
 
-        AddPanel(menu, "💬 历史对话面板", DashboardPage.ChatHistory);
-        AddPanel(menu, "🍃 自动冒泡记录", DashboardPage.BubbleHistory);
-        AddPanel(menu, "⚙️ 系统设置", DashboardPage.Settings);
+        AddPanel(menu, "❝ 历史对话面板", DashboardPage.ChatHistory);
+        AddPanel(menu, "❀ 自动冒泡记录", DashboardPage.BubbleHistory);
+        AddPanel(menu, "⚙ 系统设置", DashboardPage.Settings);
         AddPanel(menu, "⏰ 提醒事项", DashboardPage.Reminders);
-        AddPanel(menu, "🔔 报时设置", DashboardPage.Chime);
-        AddPanel(menu, "🚀 快捷启动", DashboardPage.QuickApps);
+        AddPanel(menu, "♪ 报时设置", DashboardPage.Chime);
+        AddPanel(menu, "➤ 快捷启动", DashboardPage.QuickApps);
 
         menu.Items.Add(new ToolStripSeparator());
-        var exit = new ToolStripMenuItem("❌ 退出应用");
+        var exit = new ToolStripMenuItem("✖ 退出应用");
         exit.Click += (_, _) => OnUi(() => _host.Shutdown());
         menu.Items.Add(exit);
 

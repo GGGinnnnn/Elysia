@@ -64,7 +64,7 @@ public partial class ChatHistoryPage : PageBase
     {
         if (_selectedIndex < 0 || _selectedIndex >= Config.History.Count)
         {
-            DetailBox.Text = "👈 从左侧选择一条对话查看完整内容。\n\n" +
+            DetailBox.Text = "◀ 从左侧选择一条对话查看完整内容。\n\n" +
                              "也可以直接在桌宠上和她聊天，这里会实时滚动显示。";
             return;
         }
@@ -87,7 +87,7 @@ public partial class ChatHistoryPage : PageBase
         if (HistoryList.SelectedItem is not ListBoxItem { Tag: int index }) return;
 
         var menu = new ContextMenu();
-        var item = new MenuItem { Header = "❌ 删除此条对话记录" };
+        var item = new MenuItem { Header = "✖ 删除此条对话记录" };
         item.Click += async (_, _) => await DeleteAsync(index);
         menu.Items.Add(item);
         menu.IsOpen = true;

@@ -1,8 +1,12 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Input;
+using ElysiaPet.Controls;
 using ElysiaPet.Models;
 using ElysiaPet.Services;
 using ElysiaPet.Views.Pages;
@@ -16,6 +20,9 @@ namespace ElysiaPet.Views;
 /// </summary>
 public partial class DashboardWindow : Window, IDashboardHost
 {
+    /// <summary>项目地址，显示在侧栏底部并可点击打开。</summary>
+    private const string ProjectUrl = "https://github.com/GGGinnnnn/Elysia";
+
     private readonly IPetHost _pet;
     private readonly Dictionary<DashboardPage, UserControl> _pages = new();
     private bool _forceClose;
@@ -25,7 +32,52 @@ public partial class DashboardWindow : Window, IDashboardHost
         _pet = pet;
         InitializeComponent();
 
+        BuildAtmosphere();
+        ShowProjectLink();
+
         AppLog.Info("管理台窗口已创建");
+    }
+
+    /// <summary>在内容层之下铺一层飘落花瓣与流动柔光，营造爱莉希雅的粉色氛围。</summary>
+    private void BuildAtmosphere()
+    {
+        try
+        {
+            // 后台面板空间大，花瓣可以多一些
+            EffectLayer.Children.Add(new PetalsOverlay(petalCount: 26, showRibbons: true));
+        }
+        catch (Exception ex)
+        {
+            // 氛围层属于锦上添花，出错也不能影响后台功能
+            AppLog.Warn($"后台氛围层创建失败（不影响使用）: {ex.Message}");
+        }
+    }
+
+    /// <summary>显示项目地址与版本号。</summary>
+    private void ShowProjectLink()
+    {
+        ProjectLink.Text = ProjectUrl.Replace("https://", string.Empty);
+
+        var version = Assembly.GetExecutingAssembly().GetName().Version?.ToString(3) ?? "2.1.0";
+        VersionText.Text = $"✦ ElysiaPet v{version}";
+    }
+
+    private void OnProjectLinkClick(object sender, MouseButtonEventArgs e)
+    {
+        try
+        {
+            Process.Start(new ProcessStartInfo
+            {
+                FileName = ProjectUrl,
+                UseShellExecute = true,
+            });
+            SetStatus($"已用浏览器打开项目地址：{ProjectUrl}");
+        }
+        catch (Exception ex) when (ex is System.ComponentModel.Win32Exception or InvalidOperationException)
+        {
+            AppLog.Warn($"打开项目地址失败: {ex.Message}");
+            SetStatus($"打开浏览器失败，项目地址：{ProjectUrl}");
+        }
     }
 
     public AppConfig Config => _pet.Config;
@@ -77,7 +129,7 @@ public partial class DashboardWindow : Window, IDashboardHost
         RefreshPanel(DashboardPage.QuickApps);
         RefreshPanel(DashboardPage.Chime);
 
-        _pet.ShowMessage("✨ 设置已同步！");
+        _pet.ShowMessage("✦ 设置已同步！");
         SetStatus("设置已保存并生效 ✓");
     }
 

@@ -79,6 +79,13 @@ public partial class App : Application
             return;
         }
 
+        // 图标字形诊断：挑出单色可用的图标，避免彩色 emoji 破坏粉色主题
+        if (e.Args.Any(arg => string.Equals(arg, "--icontest", StringComparison.OrdinalIgnoreCase)))
+        {
+            IconTest.Run();
+            return;
+        }
+
         _pet = new PetWindow(_configService, _aiClient);
         _pet.Show();
 

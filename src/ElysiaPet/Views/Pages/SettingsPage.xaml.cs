@@ -231,18 +231,18 @@ public partial class SettingsPage : PageBase
         {
             var reply = await _tester.IdleLineAsync(probe, TimeSpan.FromSeconds(15));
             var (text, state) = TextParsers.ParseReply(TextParsers.StripThinking(reply));
-            TestResultText.Text = $"✅ 连接成功！模型回复：{text}（心情标签：{state}）";
+            TestResultText.Text = $"✓ 连接成功！模型回复：{text}（心情标签：{state}）";
             Status("连接测试通过 ✓");
         }
         catch (AiException ex)
         {
-            TestResultText.Text = $"❌ {ex.Message}";
+            TestResultText.Text = $"✖ {ex.Message}";
             Status("连接测试失败，请检查 API Key 与接口地址");
         }
         catch (Exception ex)
         {
             AppLog.Error("连接测试异常", ex);
-            TestResultText.Text = $"❌ 未预期错误：{ex.Message}";
+            TestResultText.Text = $"✖ 未预期错误：{ex.Message}";
             Status("连接测试失败");
         }
     }

@@ -42,6 +42,7 @@ internal static class UiShot
 
         var index = 0;
         var pageIndex = 0;
+        var petStatesDone = 0;
 
         var timer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(900) };
         timer.Tick += (_, _) =>
@@ -52,6 +53,32 @@ internal static class UiShot
                 {
                     Save(windows[index], Path.Combine(outputDirectory, names[index] + ".png"));
                     index++;
+                    return;
+                }
+
+                // 桌宠的三种状态：待机 / 气泡 / 输入框，用于人工核对样式
+                if (petStatesDone < 3)
+                {
+                    switch (petStatesDone)
+                    {
+                        case 0:
+                            Save(pet, Path.Combine(outputDirectory, "pet-1-idle.png"));
+                            break;
+                        case 1:
+                            pet.ShowMessage("今天的你也超好看呢，要不要一起喝杯茶呀？");
+                            // 截图模式不进消息循环，打字机的延时回调不会跑，这里直接把全文亮出来
+                            pet.CompleteTypewriter();
+                            pet.SetBubbleOpacityImmediately(1.0);
+                            Save(pet, Path.Combine(outputDirectory, "pet-2-bubble.png"));
+                            break;
+                        case 2:
+                            pet.ShowInputBox();
+                            Save(pet, Path.Combine(outputDirectory, "pet-3-input.png"));
+                            break;
+                    }
+
+                    AppLog.Info($"[布局] 状态{petStatesDone}: {pet.DescribeLayout()}");
+                    petStatesDone++;
                     return;
                 }
 
@@ -87,6 +114,8 @@ internal static class UiShot
 
     private static void Save(Window window, string path)
     {
+        if (window is PetWindow pw) AppLog.Info($"[渲染前] {pw.DescribeLayout()}");
+
         var width = (int)Math.Ceiling(window.ActualWidth > 0 ? window.ActualWidth : window.Width);
         var height = (int)Math.Ceiling(window.ActualHeight > 0 ? window.ActualHeight : window.Height);
         if (width <= 0 || height <= 0)

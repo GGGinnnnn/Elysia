@@ -12,7 +12,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,12">
-            <TextBlock Text="🚀 右键菜单快捷启动" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="➤ 右键菜单快捷启动" Style="{StaticResource PageTitle}" />
             <TextBlock Style="{StaticResource HintText}"
                        Text="添加的程序会实时出现在桌宠右键菜单的最上方，无需重启。" />
         </StackPanel>
@@ -25,11 +25,11 @@
             <TextBlock Text="显示名称" VerticalAlignment="Center" />
             <TextBox x:Name="NameBox" Style="{StaticResource FieldBox}" Width="180" Margin="8,0"
                      ToolTip="例如：Steam / 网易云音乐" />
-            <Button Content="➕ 添加程序" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" Click="OnAdd" />
-            <Button Content="▶️ 立即测试" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnTest" />
-            <Button Content="❌ 删除选中" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnDelete" />
-            <Button Content="⬆️ 上移" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnMoveUp" />
-            <Button Content="⬇️ 下移" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnMoveDown" />
+            <Button Content="✚ 添加程序" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" Click="OnAdd" />
+            <Button Content="▶ 立即测试" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnTest" />
+            <Button Content="✖ 删除选中" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnDelete" />
+            <Button Content="▲ 上移" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnMoveUp" />
+            <Button Content="▼ 下移" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnMoveDown" />
         </StackPanel>
     </Grid>
 </pages:PageBase>

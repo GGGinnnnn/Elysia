@@ -43,7 +43,7 @@ public partial class RemindersPage : PageBase
             var expired = IsPast(reminder.Time);
             ReminderList.Items.Add(new ListBoxItem
             {
-                Content = $"{(expired ? "✅" : "⏰")}  {reminder.Time}   {reminder.Content}" +
+                Content = $"{(expired ? "✓" : "⏰")}  {reminder.Time}   {reminder.Content}" +
                           (expired ? "   （今天已过时间点）" : string.Empty),
                 Tag = index,
             });

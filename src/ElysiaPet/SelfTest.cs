@@ -238,6 +238,9 @@ internal static class SelfTest
             // 输入框必须会自己收起来
             await CheckInputBoxAutoHideAsync(pet, Check);
 
+            // 【核心回归】点击桌宠弹出输入框时桌宠不能位移
+            await CheckPetDoesNotJumpAsync(pet, Check);
+
             // 右键缩放结束后不应该弹出右键菜单
             await CheckRightClickResizeDoesNotOpenMenuAsync(pet, Check);
 
@@ -256,6 +259,95 @@ internal static class SelfTest
 
         AppLog.Info($"======== 自检结束：失败 {failures} 项 ========");
         return failures == 0 ? 0 : 1;
+    }
+
+    /// <summary>
+    /// 【核心回归】点击桌宠弹出输入框时，桌宠本体绝对不能发生位移。
+    ///
+    /// 这里同时校验三件事：
+    ///   1. 输入框显示前后，桌宠的屏幕坐标完全不变；
+    ///   2. 窗口尺寸在切换时也保持不变（尺寸一变就意味着布局在重排）；
+    ///   3. 显示气泡同样不能让桌宠位移。
+    /// 这三条任意一条被破坏，用户就会重新看到「一点击桌宠就瞬移」。
+    /// </summary>
+    private static async Task CheckPetDoesNotJumpAsync(PetWindow pet, Action<string, bool, string?> check)
+    {
+        try
+        {
+            pet.HideInputBoxForTest();
+            await PumpDispatcherAsync(TimeSpan.FromMilliseconds(120));
+
+            var before = pet.GetPetScreenRect();
+            var heightBefore = pet.WindowHeight;
+
+            // ---- 弹出输入框 ----
+            pet.ShowInputBox();
+            await PumpDispatcherAsync(TimeSpan.FromMilliseconds(160));
+            var after = pet.GetPetScreenRect();
+            var heightAfter = pet.WindowHeight;
+
+            var movedX = Math.Abs(after.Left - before.Left);
+            var movedY = Math.Abs(after.Top - before.Top);
+
+            check("点击桌宠: 桌宠位置不位移",
+                movedX < 0.5 && movedY < 0.5,
+                $"前({before.Left:0},{before.Top:0}) 后({after.Left:0},{after.Top:0}) 位移({movedX:0.0},{movedY:0.0})");
+
+            check("点击桌宠: 窗口尺寸不变",
+                Math.Abs(heightAfter - heightBefore) < 0.5,
+                $"高度 {heightBefore:0} -> {heightAfter:0}");
+
+            // ---- 情形 A：桌宠放在屏幕中部（下方有空间）→ 输入框应该在下方 ----
+            var midLeft = before.Left;
+            var midTop = Math.Max(60, before.Top - 220);
+            pet.MovePetTo(midLeft, midTop);
+            await PumpDispatcherAsync(TimeSpan.FromMilliseconds(120));
+            pet.HideInputBoxForTest();
+            pet.ShowInputBox();
+            await PumpDispatcherAsync(TimeSpan.FromMilliseconds(160));
+
+            var caseA = pet.IsInputBoxAbove;
+            check("输入框: 下方有空间时显示在桌宠下方", !caseA,
+                caseA ? "却在下方有空间时放到了上方" : "在下方");
+
+            // ---- 情形 B：桌宠贴到屏幕底部（下方没空间）→ 输入框应该翻到上方 ----
+            var area = pet.CurrentWorkAreaForTest();
+            pet.MovePetTo(midLeft, area.Bottom - 30);
+            await PumpDispatcherAsync(TimeSpan.FromMilliseconds(120));
+            pet.HideInputBoxForTest();
+            pet.ShowInputBox();
+            await PumpDispatcherAsync(TimeSpan.FromMilliseconds(160));
+
+            var caseB = pet.IsInputBoxAbove;
+            var notMoved = Math.Abs(pet.GetPetScreenRect().Top - (area.Bottom - 30)) < 1.5;
+            check("输入框: 下方无空间时翻到桌宠上方", caseB,
+                caseB ? "已翻到上方" : "仍在下方");
+            check("输入框: 翻到上方时桌宠依然不位移", notMoved,
+                $"桌宠 Top={pet.GetPetScreenRect().Top:0} 期望={area.Bottom - 30:0}");
+
+            // 复位
+            pet.HideInputBoxForTest();
+            pet.MovePetTo(before.Left, before.Top);
+            await PumpDispatcherAsync(TimeSpan.FromMilliseconds(120));
+
+            // ---- 显示气泡也不能让桌宠位移 ----
+            var beforeBubble = pet.GetPetScreenRect();
+            pet.ShowMessage("自检：显示气泡时桌宠也应该待在原地哦~");
+            await PumpDispatcherAsync(TimeSpan.FromMilliseconds(220));
+            var afterBubble = pet.GetPetScreenRect();
+
+            var bubbleMovedY = Math.Abs(afterBubble.Top - beforeBubble.Top);
+            check("显示气泡: 桌宠位置不位移",
+                bubbleMovedY < 0.5,
+                $"前 Top={beforeBubble.Top:0} 后 Top={afterBubble.Top:0} 位移 {bubbleMovedY:0.0}");
+
+            pet.HideInputBoxForTest();
+            await PumpDispatcherAsync(TimeSpan.FromMilliseconds(120));
+        }
+        catch (Exception ex)
+        {
+            check("点击桌宠: 桌宠位置不位移", false, ex.Message);
+        }
     }
 
     /// <summary>

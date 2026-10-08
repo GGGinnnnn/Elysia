@@ -1,19 +1,8 @@
 # 爱莉希雅桌宠 · ElysiaPet
 
-[![.NET](https://img.shields.io/badge/.NET-10.0-512BD4.svg)](https://dotnet.microsoft.com/)
-[![WPF](https://img.shields.io/badge/UI-WPF-blueviolet.svg)](https://learn.microsoft.com/dotnet/desktop/wpf/)
-[![Platform](https://img.shields.io/badge/Platform-Windows%2010%2F11-0078D4.svg)]()
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
+把 `dask-pet2`（PyQt6 版桌宠）完整重写为 **C# / .NET 10 / WPF** 的桌面应用。
 
-> “大好的时光，有爱莉希雅陪着你，每分每秒都很特别哦~ ♪”
-
-集 **智能对话、桌面陪伴、日程管家、生产力快捷工具** 于一体的 Windows 桌面看板娘。
-
-本仓库的前身是一份 **Python / PyQt6** 实现，现已用 **C# / .NET 10 / WPF** 完整重写：
-分层架构、`async/await` 取代裸线程、配置原子写入、全量日志，
-并打包成**零依赖的单文件 exe**——目标电脑不需要安装 Python 或任何运行时。
-
-旧的 Python 版本已归档到 [`legacy-python/`](legacy-python/)，可以继续参考或运行。
+原项目一行未动，仍保留在 `D:\study\dask-pet2`；这里是一套全新的、可以独立编译运行的项目。
 
 ---
 
@@ -40,26 +29,12 @@
 
 ## 快速开始
 
-### 下载即用（推荐）
-
-到 **[Releases](https://github.com/GGGinnnnn/Elysia/releases)** 页面下载
-`ElysiaPet-v2.0.0-win-x64.zip`，解压后**双击 `ElysiaPet.exe` 即可运行**：
-
-- 单文件自包含，目标电脑**不需要安装 .NET 运行时**；
-- 8 个 GIF 表情与图标都已内嵌，**单独这一个文件就能跑**；
-- 首次启动会在同目录生成 `config.json`，在管理台「系统设置」里填入 API Key 即可对话。
-
-### 从源码构建（开发）
-
-需要 [.NET 10 SDK](https://dotnet.microsoft.com/download)。
+### 直接运行（开发）
 
 ```powershell
-git clone https://github.com/GGGinnnnn/Elysia.git
-cd Elysia
-
+cd D:\study\ElysiaPet
 .\build.ps1              # 编译 Debug
-.\build.ps1 -Test        # 编译并运行 68 项自检
-.\build.ps1 -Publish     # 发布单文件绿色版到 dist\
+.\build.ps1 -Test        # 编译并跑自检
 dotnet run --project src\ElysiaPet\ElysiaPet.csproj
 ```
 
@@ -95,27 +70,22 @@ src\ElysiaPet\bin\Debug\net10.0-windows\ElysiaPet.exe --selftest
 （鉴权头、模型名、人设、历史上下文顺序、401 与非法 JSON 的错误处理）。
 还有几项交互回归：输入框 10 秒自动收起、右键单击弹菜单 / 右键拖拽不弹菜单、
 **对话结束后回到待机表情**、待机时动画仍在播放。
-结果全部写进 `elysia.log`，最后一行会给出失败项数量。当前共 68 项，全部通过。
+结果全部写进 `elysia.log`，最后一行会给出失败项数量。当前共 74 项，全部通过。
 
 ---
 
 ## 目录结构
 
 ```
-Elysia/
+ElysiaPet/
 ├─ build.ps1                     一键构建 / 自检 / 发布脚本
 ├─ README.md
-├─ PROGRESS.md                   重构过程记录（含旧版问题清单与四轮反馈修复）
-├─ LICENSE                       MIT
-├─ config.example.json           配置文件字段模板（不含 API Key）
-├─ .gitignore
-├─ legacy-python/                旧的 Python / PyQt6 实现（已归档）
-├─ tools/                        诊断脚本（拖拽复现 / GIF 抓帧 / 右键菜单验证）
+├─ PROGRESS.md                   重构过程记录（含旧版问题清单）
+├─ dist/                         发布产物（build.ps1 -Publish 生成）
 └─ src/ElysiaPet/
    ├─ ElysiaPet.csproj           net10.0-windows，UseWPF + UseWindowsForms
    ├─ App.xaml(.cs)              入口、全局异常兜底、服务装配
-   ├─ SelfTest.cs                --selftest 自检模式（68 项）
-   ├─ GifTest.cs / UiShot.cs / GifFrames.cs   诊断模式
+   ├─ SelfTest.cs                --selftest 自检模式
    ├─ Assets/                    图标 + 8 个 GIF 表情素材
    ├─ Models/
    │  ├─ AppConfig.cs            完整配置模型 + Normalize() 范围钳制
@@ -123,7 +93,6 @@ Elysia/
    ├─ Services/
    │  ├─ ConfigService.cs        配置原子读写 + AppPaths 路径解析
    │  ├─ AiClient.cs             大模型 HTTP 客户端（OpenAI 兼容格式）
-   │  ├─ GifAnimator.cs          自研逐帧 GIF 播放器（不依赖 WPF 自动播放）
    │  ├─ AppLog.cs               队列化日志 + 1MB 轮转
    │  ├─ AutostartService.cs     注册表 / 启动文件夹两种自启动
    │  ├─ ProcessLauncher.cs      外部程序与系统工具启动
@@ -160,6 +129,32 @@ Elysia/
 
 ---
 
+## 视觉设计（v2.1 起）
+
+界面按爱莉希雅的「浪漫粉」重新做了一轮，所有颜色集中定义在 `Theme/Theme.xaml`：
+
+| 元素 | 处理 |
+| --- | --- |
+| 配色 | 深玫瑰侧栏渐变 + 奶油粉底 + 樱粉卡片 + 玫瑰金描边（主色 `#E8608C`） |
+| 字体 | 标题用**华文行楷**，正文用**幼圆**；未安装的系统自动回退到微软雅黑，不会出现方块 |
+| 花瓣特效 | `Controls/PetalsOverlay.cs`：飘落花瓣 + 缓缓流动的柔光丝带，纯形状与属性动画实现，不占额外素材体积 |
+| 右键菜单 | 粉色圆角、条目悬停有花瓣标记与粉色高亮；托盘菜单用自绘渲染器统一配色 |
+| 滑动条 | 类 Win11 样式：圆角细轨 + 粉色进度填充 + 悬停放大的圆形滑块 |
+| 图标 | 全部换成 Unicode 装饰字符区的**单色矢量字形**，会跟随主题变色；不再使用彩色 emoji |
+| 输入框 / 气泡 | 粉色渐变边框 + 圆角 + 柔和投影，输入框字号放大到 16px |
+
+### 桌宠窗口的布局约定
+
+点击桌宠弹出输入框时，**桌宠本体绝不位移**。实现上有三条硬约束：
+
+1. 窗口高度只由桌宠尺寸决定（气泡与输入框各占一个固定槽位），切换显隐不改变窗口尺寸；
+2. 桌宠的显式宽高由素材宽高比算出并写死在容器上，避免 Auto 行量到 0 高被裁切；
+3. 窗口位置只由桌宠的屏幕坐标反推，布局过程不改写它。
+
+输入框默认贴在桌宠下方；若下方放下会超出屏幕，则翻到桌宠上方；
+两者都放不下时保持下方并允许露出屏幕外 —— 宁可输入框出屏，也不挪动桌宠。
+
+---
 ## 表情动画是怎么实现的
 
 **没有依赖 WPF 的自动 GIF 播放**，因为把 `BitmapImage` 绑到 `Image.Source` 时它并不保证推进动画
@@ -184,7 +179,7 @@ Elysia/
 正常使用不会触发，排查问题时很有用：
 
 ```powershell
-# 自检：68 项检查，结果写进 elysia.log
+# 自检：74 项检查，结果写进 elysia.log
 ElysiaPet.exe --selftest
 
 # 把管理台各分页与桌宠渲染成 PNG，存到 exe 同目录的 shots\ 里
@@ -231,19 +226,8 @@ ElysiaPet.exe --gifframes
   如果桌宠被其它窗口挡住找不到，右键托盘图标选「重置位置与强制置顶」即可召回。
 - 支持多显示器：窗口位置与「气泡撑高后的回落」都基于真实显示器枚举，
   拔掉副屏或改分辨率后，桌宠不会跑到屏幕外，也不会把异常坐标写回配置。
-- GIF 素材沿用原来那一套（`src/ElysiaPet/Assets/gifs/`）。
+- GIF 素材沿用原项目的一套（`src/ElysiaPet/Assets/gifs/`）。
   加载顺序是「exe 同目录的外部文件 → 内嵌资源」，所以想换角色，
   替换同目录下的同名 GIF 即可，不需要重新编译；删掉外部文件则自动用内嵌版本。
-- 由于是重写版本，**不复用**旧版的 `pet_settings.json`，
-  需要在新的 `config.json` 里填 API Key（或在管理台界面里填）。
-  字段模板见 [`config.example.json`](config.example.json)。
-
----
-
-## 致谢与声明
-
-- **GIF 表情素材**来自 B站 up主 **_BLZ_**。如有侵权，请联系作者删除。
-- 角色「爱莉希雅」版权归 **miHoYo** 所有，本项目仅供学习交流使用。
-- 旧版 Python 实现（`legacy-python/`）为本项目的历史版本，一并保留在仓库中。
-
-本项目基于 [MIT License](LICENSE) 开源。
+- 本项目是重构版，因此**不复用**旧的 `pet_settings.json`，需要在新的 `config.json` 里填 API Key
+  （或在管理台界面里填）。

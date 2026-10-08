@@ -37,7 +37,7 @@ public partial class QuickAppsPage : PageBase
             var exists = File.Exists(app.Path);
             AppList.Items.Add(new ListBoxItem
             {
-                Content = $"{(exists ? "📂" : "⚠️ 路径已失效")} {app.Name}   ➔   {app.Path}",
+                Content = $"{(exists ? "▤" : "⚠ 路径已失效")} {app.Name}   ➔ {app.Path}",
                 Tag = i,
                 ToolTip = exists ? "双击可立即启动" : "文件已不存在，请删除或重新添加",
             });

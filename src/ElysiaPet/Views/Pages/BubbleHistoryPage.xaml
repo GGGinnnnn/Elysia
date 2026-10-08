@@ -11,7 +11,7 @@
         </Grid.RowDefinitions>
 
         <StackPanel Grid.Row="0" Margin="0,0,0,12">
-            <TextBlock Text="🍃 自动冒泡记录" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="❀ 自动冒泡记录" Style="{StaticResource PageTitle}" />
             <TextBlock Style="{StaticResource HintText}"
                        Text="待机语录、AI 待机冒泡与整点报时都会记在这里，不会污染对话历史。上限由「系统设置」里的条数控制。" />
         </StackPanel>
@@ -44,7 +44,7 @@
                     <TextBlock x:Name="CountText" Text="0" Margin="4,0" FontWeight="SemiBold"
                                Foreground="{StaticResource AccentBrush}" VerticalAlignment="Center" />
                     <TextBlock Text="条冒泡" VerticalAlignment="Center" />
-                    <Button Content="🗑 清空全部冒泡" Style="{StaticResource GhostButton}"
+                    <Button Content="✖ 清空全部冒泡" Style="{StaticResource GhostButton}"
                             Margin="18,0,0,0" Click="OnClearAll" />
                 </StackPanel>
             </Grid>

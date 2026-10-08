@@ -12,67 +12,137 @@
         Topmost="True"
         SizeToContent="Manual"
         WindowStartupLocation="Manual"
-        Width="220" Height="255">
+        Width="240" Height="300">
 
+    <!--
+        布局总原则：整扇窗口的高度【固定不变】。
+        气泡行与底部输入框行始终占据预留空间，只切换 Visibility。
+        这样点击桌宠弹出输入框时，窗口尺寸完全不变，桌宠本体也就不可能发生位移。
+    -->
     <Grid x:Name="LayoutRoot">
         <Grid.RowDefinitions>
-            <!-- 0: 气泡 -->
+            <!-- 0：气泡（保留高度，隐藏时不塌陷） -->
             <RowDefinition x:Name="BubbleRow" Height="Auto" />
-            <!-- 1: 桌宠本体 -->
+            <!-- 1：桌宠本体 -->
             <RowDefinition Height="Auto" />
-            <!-- 2: 快捷输入框 -->
+            <!-- 2：输入框区域 -->
             <RowDefinition Height="Auto" />
+            <!-- 3：底部留白，保证窗口总高度稳定 -->
+            <RowDefinition Height="*" />
         </Grid.RowDefinitions>
 
-        <!-- 聊天气泡 -->
+        <!-- ================= 聊天气泡 ================= -->
         <Border x:Name="BubbleBorder"
                 Grid.Row="0"
                 HorizontalAlignment="Center"
                 VerticalAlignment="Bottom"
-                Margin="0,0,0,4"
-                MaxWidth="460"
-                CornerRadius="12"
+                Margin="0,0,0,6"
+                MaxWidth="480"
+                CornerRadius="18"
                 BorderThickness="2"
-                BorderBrush="#FFFFB6C1"
-                Background="#F2FFFFFF"
                 Visibility="Collapsed"
                 Opacity="0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#F7FFFFFF" Offset="0" />
+                    <GradientStop Color="#F7FFF1F7" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.BorderBrush>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                    <GradientStop Color="#FFFFB6CE" Offset="0" />
+                    <GradientStop Color="#FFE8608C" Offset="1" />
+                </LinearGradientBrush>
+            </Border.BorderBrush>
             <Border.Effect>
-                <DropShadowEffect BlurRadius="12" ShadowDepth="2" Direction="270" Opacity="0.22" Color="#FF8A7C90" />
+                <DropShadowEffect BlurRadius="18" ShadowDepth="2" Direction="270"
+                                  Opacity="0.35" Color="#FFD98CB0" />
             </Border.Effect>
-            <TextBlock x:Name="BubbleText"
-                       Margin="18,12"
-                       FontFamily="Microsoft YaHei UI, Segoe UI, sans-serif"
-                       FontSize="13"
-                       Foreground="#FF333333"
-                       TextWrapping="Wrap"
-                       LineHeight="19" />
+
+            <Grid>
+                <TextBlock x:Name="BubbleText"
+                           Margin="20,14"
+                           FontFamily="幼圆, YouYuan, Microsoft YaHei UI, Segoe UI"
+                           FontSize="14"
+                           Foreground="#FF5A3244"
+                           TextWrapping="Wrap"
+                           LineHeight="21" />
+                <TextBlock Text="❀" FontSize="11" Foreground="#FFE7A9C4"
+                           HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                           Margin="0,0,10,6" Opacity="0.9" />
+            </Grid>
         </Border>
 
-        <!-- 桌宠本体（GIF 表情动画） -->
-        <Image x:Name="PetImage"
-               Grid.Row="1"
-               RenderOptions.BitmapScalingMode="HighQuality"
-               Stretch="Uniform"
-               Cursor="Hand" />
+        <!-- ================= 桌宠本体 ================= -->
+        <!--
+            必须 HorizontalAlignment=Center 且 VerticalAlignment=Top：
+            Image 用 Stretch=Uniform 且没写高度时，WPF 会按「可用高度」而不是「显式宽度」去定尺寸，
+            结果桌宠会被撑到超出预留行高、被窗口裁掉。居中后它才严格听 Width 的。
+        -->
+        <Grid Grid.Row="1" x:Name="PetHost"
+              HorizontalAlignment="Center" VerticalAlignment="Top"
+              RenderTransformOrigin="0.5,1">
+            <Grid.RenderTransform>
+                <ScaleTransform x:Name="PetBreath" ScaleX="1" ScaleY="1" />
+            </Grid.RenderTransform>
 
-        <!-- 快捷输入框 -->
+            <Image x:Name="PetImage"
+                   RenderOptions.BitmapScalingMode="HighQuality"
+                   Stretch="Uniform"
+                   Cursor="Hand" />
+        </Grid>
+
+        <!-- ================= 输入框 ================= -->
         <Border x:Name="InputBorder"
                 Grid.Row="2"
-                Margin="0,6,0,0"
-                CornerRadius="10"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Margin="0,8,0,0"
+                CornerRadius="16"
                 BorderThickness="2"
-                BorderBrush="#FFFFB6C1"
-                Background="#F2FFFFFF"
                 Visibility="Collapsed">
-            <TextBox x:Name="InputBox"
-                     BorderThickness="0"
-                     Background="Transparent"
-                     Padding="10,6"
-                     FontFamily="Microsoft YaHei UI, Segoe UI, sans-serif"
-                     FontSize="12"
-                     VerticalContentAlignment="Center"
-                     CaretBrush="#FFE75A7C" />
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FAFFFFFF" Offset="0" />
+                    <GradientStop Color="#FAFFF3F8" Offset="1" />
+                </LinearGradientBrush>
+            </Border.Background>
+            <Border.BorderBrush>
+                <LinearGradientBrush StartPoint="0,0" EndPoint="1,0">
+                    <GradientStop Color="#FFFFB6CE" Offset="0" />
+                    <GradientStop Color="#FFE8608C" Offset="1" />
+                </LinearGradientBrush>
+            </Border.BorderBrush>
+            <Border.Effect>
+                <DropShadowEffect BlurRadius="16" ShadowDepth="2" Direction="270"
+                                  Opacity="0.4" Color="#FFD98CB0" />
+            </Border.Effect>
+
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="❀" FontSize="13" Foreground="#FFE8608C"
+                           VerticalAlignment="Center" Margin="12,0,2,0" />
+
+                <TextBox x:Name="InputBox"
+                         Grid.Column="1"
+                         BorderThickness="0"
+                         Background="Transparent"
+                         Padding="6,10"
+                         FontFamily="幼圆, YouYuan, Microsoft YaHei UI, Segoe UI"
+                         FontSize="16"
+                         Foreground="#FF5A3244"
+                         VerticalContentAlignment="Center"
+                         CaretBrush="#FFE8608C"
+                         SelectionBrush="#FFFFD9E6" />
+
+                <TextBlock Grid.Column="2" Text="♪" FontSize="13" Foreground="#FFE7A9C4"
+                           VerticalAlignment="Center" Margin="2,0,12,0" />
+            </Grid>
         </Border>
     </Grid>
 </Window>

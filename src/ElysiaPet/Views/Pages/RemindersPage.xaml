@@ -28,9 +28,9 @@
             <TextBlock Text="内容" VerticalAlignment="Center" Margin="8,0,0,0" />
             <TextBox x:Name="ContentBox" Style="{StaticResource FieldBox}" Width="320" Margin="8,0"
                      ToolTip="例如：开会 / 喝水 / 提交报告" />
-            <Button Content="➕ 添加" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" Click="OnAdd" />
-            <Button Content="❌ 删除选中" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnDelete" />
-            <Button Content="🧹 清空已过期" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnClearPast" />
+            <Button Content="✚ 添加" Style="{StaticResource PrimaryButton}" Margin="8,0,0,0" Click="OnAdd" />
+            <Button Content="✖ 删除选中" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnDelete" />
+            <Button Content="❃ 清空已过期" Style="{StaticResource GhostButton}" Margin="8,0,0,0" Click="OnClearPast" />
         </StackPanel>
     </Grid>
 </pages:PageBase>

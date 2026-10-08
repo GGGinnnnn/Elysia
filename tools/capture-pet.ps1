@@ -1,7 +1,7 @@
 ﻿<#
     抓取桌宠窗口的真实画面并存成 PNG，用于确认动画与渲染是否正常。
     用法: powershell -ExecutionPolicy Bypass -File .\shot.ps1
-    结果: <仓库根>\shots\pet-0.png ... pet-5.png
+    结果: D:\study\ElysiaPet\shots\pet-0.png ... pet-5.png
 #>
 $ErrorActionPreference = 'Stop'
 Add-Type -AssemblyName System.Drawing
@@ -39,10 +39,9 @@ public class Shot {
 }
 '@ -ReferencedAssemblies System.Drawing
 
-. (Join-Path $PSScriptRoot 'common.ps1')
-$dir = Get-ElysiaExeDir
+$dir = 'D:\study\ElysiaPet\src\ElysiaPet\bin\Debug\net10.0-windows'
 $exe = Join-Path $dir 'ElysiaPet.exe'
-$shots = Get-ElysiaShotsDir
+$shots = 'D:\study\ElysiaPet\shots'
 New-Item -ItemType Directory -Force -Path $shots | Out-Null
 Get-ChildItem "$shots\*.png" -ErrorAction SilentlyContinue | Remove-Item -Force
 

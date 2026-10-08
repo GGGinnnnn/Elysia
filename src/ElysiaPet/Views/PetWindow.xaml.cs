@@ -77,6 +77,18 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
     private CancellationTokenSource? _aiCts;
     private bool _disposed;
 
+    /// <summary>首次落地是否已完成。用于区分「启动时的可见性兜底」和「平时的重排」。</summary>
+    private bool _placementInitialized;
+
+    /// <summary>输入框当前是否被放到了桌宠上方（下方没空间时才这样）。</summary>
+    private bool _inputBoxAbove;
+
+    /// <summary>
+    /// 当前气泡槽位高度。气泡在槽内生长时窗口完全不动；
+    /// 只有气泡超过槽位才会撑高窗口，并同步补偿 Top 以保持桌宠屏幕位置不变。
+    /// </summary>
+    private double _bubbleSlotHeight = 132;
+
     public PetWindow(ConfigService configService, AiClient aiClient)
     {
         _configService = configService;
@@ -116,15 +128,54 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
 
         ApplyWindowIcon();
         ChangeState("waiting");          // 载入并开始播放待机动画
-        ApplyPetScale();
+        ApplyPetScale();                 // 会顺带按桌宠尺寸把窗口排好
         RestoreWindowPlacement();
+        ClampPetIntoWorkArea();          // 首次落地时确保桌宠在屏内
+        _placementInitialized = true;
         WindowLevelService.Apply(this, Config.Level);
 
         RefreshTray();
-        UpdateInputBoxSize();
+        StartBreathing();
 
         _tickTimer.Start();
-        AppLog.Info($"窗口层级: {Config.Level}, 桌宠宽度: {_currentPetWidth:0}");
+        AppLog.Info($"窗口层级: {Config.Level}, 桌宠宽度: {_currentPetWidth:0}, " +
+                    $"窗口 {Width:0}x{Height:0}");
+    }
+
+    /// <summary>
+    /// 给桌宠加一个极轻微的呼吸缩放（只缩放，不移动窗口）。
+    /// 用 ScaleTransform 而不是改尺寸，避免和布局互抢导致抖动。
+    /// </summary>
+    private void StartBreathing()
+    {
+        try
+        {
+            var breath = new DoubleAnimation
+            {
+                From = 1.0,
+                To = 1.022,
+                Duration = TimeSpan.FromSeconds(2.6),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever,
+                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
+            };
+            PetBreath.BeginAnimation(ScaleTransform.ScaleYProperty, breath);
+
+            var breathX = new DoubleAnimation
+            {
+                From = 1.0,
+                To = 1.012,
+                Duration = TimeSpan.FromSeconds(2.6),
+                AutoReverse = true,
+                RepeatBehavior = RepeatBehavior.Forever,
+                EasingFunction = new SineEase { EasingMode = EasingMode.EaseInOut },
+            };
+            PetBreath.BeginAnimation(ScaleTransform.ScaleXProperty, breathX);
+        }
+        catch (Exception ex)
+        {
+            AppLog.Warn($"桌宠呼吸动画启动失败（不影响使用）: {ex.Message}");
+        }
     }
 
     /// <summary>设置窗口图标：外部文件优先，没有就用手写进程序集的内嵌图标。</summary>
@@ -157,11 +208,15 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
 
     private void RestoreWindowPlacement()
     {
+        // 窗口顶部到桌宠顶部的固定距离（气泡槽位），用它把「配置里存的桌宠位置」
+        // 换算回窗口位置，保证保存/恢复前后桌宠落在同一个屏幕点上。
+        const double petOffsetInWindow = BubbleSlotHeight;
+
         if (Config.WindowX is { } savedX && Config.WindowY is { } savedY && IsOnAnyScreen(savedX, savedY))
         {
             // 旧坐标只有在确实落在某块真实显示器上时才恢复，否则宁可回默认位置
             Left = savedX;
-            Top = savedY;
+            Top = Math.Max(0, savedY - petOffsetInWindow);
         }
         else
         {
@@ -175,11 +230,16 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
     {
         Config.PetWidth = _currentPetWidth;
 
+        // 存「桌宠本体」的坐标而不是窗口坐标：窗口还带着气泡预留区，
+        // 存窗口坐标会让下次启动时桌宠整体上移一个槽位的高度。
+        var petLeft = Left;
+        var petTop = Top + BubbleSlotHeight;
+
         // 位置明显不合理时不要污染配置，避免下次启动继续跑到屏幕外
-        if (IsOnAnyScreen(Left, Top))
+        if (IsOnAnyScreen(petLeft, petTop))
         {
-            Config.WindowX = Left;
-            Config.WindowY = Top;
+            Config.WindowX = petLeft;
+            Config.WindowY = petTop;
         }
 
         _ = SaveConfigAsync();
@@ -233,11 +293,21 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
         return scale > 0 ? scale : 1.0;
     }
 
-    /// <summary>默认落点：主屏工作区右下角，和旧版一致的初始观感。</summary>
+    /// <summary>
+    /// 默认落点：主屏右下角，且让「桌宠本体」贴着右下（而不是让整扇窗口贴边），
+    /// 这样气泡预留区自然落在屏幕内的上方。
+    /// </summary>
     private (double Left, double Top) DefaultPlacement()
     {
         var area = PrimaryWorkAreaDip();
-        return (area.Right - _currentPetWidth - 60, area.Bottom - Height - 40);
+
+        // 底部预留输入框槽位，让默认位置下输入框也能完整显示在屏幕内
+        var petHeight = MeasurePetHeight(_currentPetWidth);
+        var petLeft = area.Right - _currentPetWidth - 60;
+        var petTop = area.Bottom - petHeight - InputSlotHeight - 8;
+
+        // 窗口顶部 = 桌宠顶部 - 气泡预留区
+        return (petLeft, Math.Max(area.Top, petTop - BubbleSlotHeight));
     }
 
     /// <summary>主屏工作区，单位已换算成 DIP，可直接与 Window.Left/Top 运算。</summary>
@@ -471,43 +541,109 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
 
     private void ApplyPetScale()
     {
-        PetImage.Width = _currentPetWidth;
-        PetImage.Height = double.NaN;   // 高度由 GIF 自身宽高比决定，等比例缩放不再靠手算
+        var width = _currentPetWidth;
+        var height = MeasurePetHeight(width);
+
+        // Image 与它的容器都设显式尺寸。
+        // 容器必须显式定高：它的行是 Auto，若量到 0 高，
+        // WPF 会把超出布局槽的子元素整块裁掉，桌宠就完全不可见（实测正是这个现象）。
+        PetImage.Width = width;
+        PetImage.Height = height;
+        PetHost.Width = width;
+        PetHost.Height = height;
+
         UpdateInputBoxSize();
+        UpdateLayoutForBubble(animate: false);
     }
 
     private void UpdateInputBoxSize()
     {
+        // 输入框宽度跟随桌宠缩放，但保底不至于太窄输不下字
         var scale = _currentPetWidth / BaseWidth;
-        InputBox.FontSize = Math.Clamp(12 * scale, 9, 26);
-        InputBox.Width = Math.Clamp(180 * scale, 90, 460);
+        InputBox.Width = Math.Clamp(210 * scale, 150, 520);
+        InputBorder.MinWidth = Math.Clamp(230 * scale, 170, 560);
     }
 
     /// <summary>
-    /// 依据气泡是否可见重新计算窗口尺寸，并把「身体底部」钉在原地，
-    /// 这样气泡淡出缩回时桌宠不会突然向上跳（旧版为这个问题打了两个补丁）。
+    /// 【布局总擎】窗口尺寸只由桌宠本体决定，气泡与输入框各占一个固定槽位。
+    ///
+    /// 关键点：
+    ///   1. 气泡槽位（<see cref="BubbleSlotHeight"/>）与输入框槽位（<see cref="InputSlotHeight"/>）
+    ///      都是【恒定预留】的，不随内容显隐变化 —— 所以窗口总高度永远不变；
+    ///   2. 气泡与输入框只切换 Visibility，不改变窗口尺寸；
+    ///   3. 窗口位置（Left/Top）只由桌宠的屏幕坐标反推一次，之后不再被布局改写。
+    ///
+    /// 这三点合起来保证了「点击桌宠弹出输入框时桌宠绝不位移」——
+    /// 旧实现靠「记住窗口底边、改完尺寸再把 Top 挪回去」补偿，气泡和输入框同时出现时会互相打架，
+    /// 于是就有了用户看到的瞬移。
     /// </summary>
     private void UpdateLayoutForBubble(bool animate)
     {
-        UpdateLayout();
+        var petWidth = Math.Max(MinPetWidth, _currentPetWidth);
+        var desiredWidth = Math.Max(petWidth, 240);
+        var petHeight = MeasurePetHeight(petWidth);
 
-        var petHeight = PetImage.ActualHeight > 0 ? PetImage.ActualHeight : _currentPetWidth;
-        var bubbleHeight = _bubbleVisible ? BubbleBorder.ActualHeight : 0;
-        var belowPet = InputBorder.Visibility == Visibility.Visible
-            ? InputBorder.ActualHeight + InputBorder.Margin.Top
-            : 0;
+        // 记住上次的槽高，用于「气泡超过上限」时做 Top 补偿
+        var previousSlot = _bubbleSlotHeight;
 
-        var desiredWidth = Math.Max(_currentPetWidth, _bubbleVisible ? BubbleBorder.ActualWidth : 0);
-        var desiredHeight = bubbleHeight + petHeight + belowPet + (bubbleHeight > 0 ? BubbleBorder.Margin.Bottom : 0);
+        // 第 0 行固定为气泡槽高，气泡自身贴底摆放 ——
+        // 它是在这块空间里向上生长的，绝不会把桌宠往下推。
+        // （之前把「固定行高」和「PetHost 顶部留白」叠加，等于把桌宠推下去两次，桌宠就被挤出了窗口。）
+        _bubbleSlotHeight = BubbleSlotHeight;
+        BubbleRow.Height = new GridLength(_bubbleSlotHeight);
 
-        var bottomEdge = Top + Height;
+        BubbleBorder.Width = double.NaN;
+        BubbleBorder.MaxWidth = Math.Max(200, desiredWidth - 8);
+
+        // 桌宠不再需要额外留白：纵向位置完全由行高决定
+        PetHost.Margin = new Thickness(0);
+        InputBorder.Height = InputSlotHeight;
 
         Width = desiredWidth;
-        Height = desiredHeight;
-        Top = bottomEdge - desiredHeight;
+        Height = _bubbleSlotHeight + petHeight + InputSlotHeight;
 
-        ClampIntoWorkArea();
+        // 只有气泡高度超过槽位时才把窗口撑高，并做一次 Top 反向补偿
+        UpdateLayout();
+        var bubbleHeight = BubbleBorder.Visibility == Visibility.Visible
+            ? BubbleBorder.ActualHeight
+            : 0;
+        var newSlot = Math.Max(BubbleSlotHeight, Math.Min(bubbleHeight, BubbleSlotHeight * 3));
+        var delta = newSlot - previousSlot;
+
+        if (Math.Abs(delta) > 0.5)
+        {
+            // 槽位变高会把桌宠往下推 delta，于是把窗口整体上移同样的量，桌宠屏幕位置不变
+            _bubbleSlotHeight = newSlot;
+            BubbleRow.Height = new GridLength(newSlot);
+            Top -= delta;
+            Height = newSlot + petHeight + InputSlotHeight;
+        }
+
+        _ = animate;   // 尺寸恒定后不再需要「生长动画」，保留参数是为了兼容既有调用点
+
+        // 只在首次落地时做一次可见性兜底；平时不做任何位移，
+        // 用户明确要求「无空间时允许气泡显示在屏幕外」，不要为此挪动桌宠。
+        if (!_placementInitialized)
+        {
+            ClampPetIntoWorkArea();
+            _placementInitialized = true;
+        }
     }
+
+    /// <summary>按当前素材的宽高比计算桌宠在指定宽度下应有的高度。</summary>
+    private double MeasurePetHeight(double width)
+    {
+        if (PetImage.Source is System.Windows.Media.Imaging.BitmapSource { PixelWidth: > 0, PixelHeight: > 0 } source)
+            return width * source.PixelHeight / (double)source.PixelWidth;
+
+        // 拿不到素材信息时退化为正方形（GIF 素材本来就是 320x320）
+        return width;
+    }
+    /// <summary>气泡槽位的固定高度。超出部分会被裁剪，以保证桌宠位置稳定。</summary>
+    private const double BubbleSlotHeight = 132;
+
+    /// <summary>输入框槽位的固定高度（含与桌宠之间的间距）。恒定预留，不随显隐变化。</summary>
+    private const double InputSlotHeight = 62;
 
     private void UpdateBubbleLayout(bool animateGrowth)
     {
@@ -515,15 +651,29 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
         UpdateLayoutForBubble(animateGrowth);
     }
 
-    /// <summary>把窗口拉回当前所在显示器的工作区内，避免气泡撑高后跑出屏幕。</summary>
-    private void ClampIntoWorkArea()
+    /// <summary>
+    /// 只在初始化或用户主动重置位置时调用：把「桌宠本体」拉回工作区内。
+    /// 刻意以桌宠（而不是整扇窗口）为基准，这样气泡即便超出屏幕也不会把桌宠顶走。
+    /// </summary>
+    private void ClampPetIntoWorkArea()
     {
         var area = CurrentWorkAreaDip();
 
-        if (Top + Height > area.Bottom) Top = Math.Max(area.Top, area.Bottom - Height);
-        if (Left + Width > area.Right) Left = Math.Max(area.Left, area.Right - Width);
-        if (Top < area.Top) Top = area.Top;
-        if (Left < area.Left) Left = area.Left;
+        var petTop = Top + BubbleSlotHeight;
+        var petBottom = petTop + (PetImage.ActualHeight > 0 ? PetImage.ActualHeight : _currentPetWidth);
+        var petLeft = Left;
+        var petRight = Left + Width;
+
+        var dy = 0.0;
+        if (petBottom > area.Bottom) dy = area.Bottom - petBottom;
+        else if (petTop < area.Top) dy = area.Top - petTop;
+
+        var dx = 0.0;
+        if (petRight > area.Right) dx = area.Right - petRight;
+        else if (petLeft < area.Left) dx = area.Left - petLeft;
+
+        if (dy != 0) Top += dy;
+        if (dx != 0) Left += dx;
     }
 
     /// <summary>
@@ -643,6 +793,30 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
         FadeBubble(toVisible: false, durationMs: 420);
     }
 
+    /// <summary>立刻显示气泡全文并停掉打字机（点击加速、以及截图/自检都走这里）。</summary>
+    public void CompleteTypewriter()
+    {
+        if (!_isTyping) return;
+
+        _typewriterTimer.Stop();
+        BubbleText.Text = _bubbleFullText;
+        _bubbleCursor = _bubbleFullText.Length + 1;
+        _isTyping = false;
+        UpdateLayoutForBubble(animate: true);
+        _bubbleHideTimer.Start();
+    }
+
+    /// <summary>
+    /// 跳过淡入动画，直接把气泡拉到完全不透明（截图与自检用）。
+    /// 淡入由属性动画驱动，而截图模式不跑渲染时钟，动画值会一直停在起始的 0 ——
+    /// 于是气泡位置尺寸都对，却整块看不见。
+    /// </summary>
+    public void SetBubbleOpacityImmediately(double opacity)
+    {
+        BubbleBorder.BeginAnimation(OpacityProperty, null);   // 清掉动画，改为直接赋值
+        BubbleBorder.Opacity = opacity;
+    }
+
     /// <summary>气泡还在打字时点击桌宠：立刻显示全文，方便快速阅读。</summary>
     private bool TrySkipTypewriter()
     {
@@ -650,12 +824,7 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
 
         if (_isTyping)
         {
-            _typewriterTimer.Stop();
-            BubbleText.Text = _bubbleFullText;
-            _bubbleCursor = _bubbleFullText.Length + 1;
-            _isTyping = false;
-            UpdateLayoutForBubble(animate: true);
-            _bubbleHideTimer.Start();
+            CompleteTypewriter();
             return true;
         }
 
@@ -721,10 +890,99 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
     {
         _suppressInputAutoHide = false;
         InputBorder.Visibility = Visibility.Visible;
+
+        // 先按「预留了输入框槽位」的规则把窗口排好，再决定输入框贴上还是贴下
         UpdateLayoutForBubble(animate: true);
+        PlaceInputBox();
+
         InputBox.Focus();
         ResetInputHideTimer();
     }
+
+    /// <summary>
+    /// 决定输入框显示在桌宠下方还是上方。
+    ///
+    /// 判断方式直接算屏幕坐标：把输入框放在桌宠下方，看它的底边会不会超出工作区。
+    /// 不用「窗口内部富余空间」来判断 —— 那个值依赖布局细节，很容易被别的改动带偏；
+    /// 用屏幕坐标则与布局实现无关，也和用户看到的一致。
+    ///
+    /// 上下都放不下时保持下方，允许它露出一部分在屏幕外 ——
+    /// 这是刻意的：绝不为了让输入框可见而挪动桌宠。
+    /// </summary>
+    private void PlaceInputBox()
+    {
+        var petHeight = PetImage.ActualHeight > 0 ? PetImage.ActualHeight : _currentPetWidth;
+        var petTop = Top + BubbleSlotHeight;
+
+        var inputHeight = Math.Max(InputBorder.ActualHeight, 40);
+        var gap = 8.0;
+        var area = CurrentWorkAreaDip();
+
+        // 放在下方时的底边：桌宠底边 + 间距 + 输入框高度
+        var bottomIfBelow = petTop + petHeight + gap + inputHeight;
+        var placeAbove = bottomIfBelow > area.Bottom - 2;
+
+        if (placeAbove)
+        {
+            // 放到桌宠上方：占据气泡那一行的底部，紧贴桌宠头顶
+            Grid.SetRow(InputBorder, 0);
+            Grid.SetRowSpan(InputBorder, 1);
+            InputBorder.VerticalAlignment = VerticalAlignment.Bottom;
+            InputBorder.Margin = new Thickness(0, 0, 0, 6);
+        }
+        else
+        {
+            // 默认：桌宠下方
+            Grid.SetRow(InputBorder, 2);
+            Grid.SetRowSpan(InputBorder, 1);
+            InputBorder.VerticalAlignment = VerticalAlignment.Top;
+            InputBorder.Margin = new Thickness(0, 0, 0, 0);
+        }
+
+        _inputBoxAbove = placeAbove;
+    }
+
+    /// <summary>输入框当前是否显示在桌宠上方（自检使用）。</summary>
+    public bool IsInputBoxAbove => _inputBoxAbove;
+
+    /// <summary>桌宠本体当前在屏幕上的矩形：Left, Top, Width, Height（自检使用）。</summary>
+    public (double Left, double Top, double Width, double Height) GetPetScreenRect()
+    {
+        var height = PetImage.ActualHeight > 0 ? PetImage.ActualHeight : _currentPetWidth;
+        return (Left, Top + BubbleSlotHeight, Width, height);
+    }
+
+    /// <summary>窗口当前的高度（自检使用，用于确认布局尺寸稳定）。</summary>
+    public double WindowHeight => Height;
+
+    /// <summary>把桌宠本体移动到指定屏幕坐标（自检使用）。</summary>
+    public void MovePetTo(double petLeft, double petTop)
+    {
+        Left = petLeft;
+        Top = petTop - BubbleSlotHeight;
+    }
+
+    /// <summary>布局细节快照，供诊断输出（自检/截图模式使用）。</summary>
+    public string DescribeLayout()
+    {
+        var petBandTop = Top + BubbleSlotHeight;
+        var hostPt = PetHost.TranslatePoint(new System.Windows.Point(0, 0), this);
+        var hostY = hostPt.Y;
+        var imgPt = PetImage.TranslatePoint(new System.Windows.Point(0, 0), this);
+        return $"窗口 {Width:0}x{Height:0} @({Left:0},{Top:0}) | " +
+               $"桌宠带顶 y={petBandTop:0} | 容器 y={hostY:0} 高={PetHost.ActualHeight:0} 宽={PetHost.ActualWidth:0} | " +
+               $"图 高={PetImage.ActualHeight:0} 宽={PetImage.ActualWidth:0} | " +
+               $"气泡={BubbleBorder.Visibility}/高{BubbleBorder.ActualHeight:0} | " +
+               $"图在窗口内=({imgPt.X:0},{imgPt.Y:0}) | " +
+               $"输入框={InputBorder.Visibility}/上方{_inputBoxAbove}/高{InputBorder.ActualHeight:0} | " +
+               $"PetHost.Margin={PetHost.Margin} | 行高[{BubbleRow.ActualHeight:0},{PetHost.ActualHeight:0}] | " +
+               $"行0={LayoutRoot.RowDefinitions[0].Height} 行1={LayoutRoot.RowDefinitions[1].Height} 行2={LayoutRoot.RowDefinitions[2].Height}";
+    }
+    /// <summary>当前显示器的工作区（自检使用）。</summary>
+    public Rect CurrentWorkAreaForTest() => CurrentWorkAreaDip();
+
+    /// <summary>收起输入框（自检使用，等价于用户再点一次桌宠）。</summary>
+    public void HideInputBoxForTest() => HideInputBox();
 
     private void HideInputBox()
     {
@@ -823,7 +1081,7 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
         {
             ShowMessage($"已经为你唤醒『{key}』啦，指挥官~ ♪");
             ChangeState("wink");
-            AppendLiveLog($"🚀 [快捷指令] {key} -> {target}");
+            AppendLiveLog($"➤ [快捷指令] {key} -> {target}");
         }
         else
         {
@@ -867,7 +1125,7 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
         {
             ShowMessage(ex.Message);
             ChangeState("cry");
-            AppendLiveLog($"⚠️ [AI 异常] {ex.Message}");
+            AppendLiveLog($"⚠ [AI 异常] {ex.Message}");
         }
         catch (Exception ex)
         {
@@ -949,7 +1207,7 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
 
         ShowMessage(message);
         ChangeState("wink");
-        AppendLiveLog($"🔔 [整点报时] {message}");
+        AppendLiveLog($"♪ [整点报时] {message}");
     }
 
     private void CheckReminders(DateTime now)
@@ -1001,7 +1259,7 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
         var message = Config.IdleMessages[_random.Next(Config.IdleMessages.Count)];
         ShowMessage(message);
         ChangeState("hurry");
-        RecordBubbleLog("🍃 [本地系统冒泡]", message);
+        RecordBubbleLog("❀ [本地系统冒泡]", message);
     }
 
     private async Task GenerateAiIdleLineAsync()
@@ -1014,7 +1272,7 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
 
             ShowMessage(text);
             ChangeState(state);
-            RecordBubbleLog("✨ [AI待机自动冒泡]", text);
+            RecordBubbleLog("✦ [AI待机自动冒泡]", text);
         }
         catch (AiException ex)
         {
@@ -1312,13 +1570,12 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
         var targetWidth = Math.Clamp(_resizeAnchorWidth + deltaX, MinPetWidth, MaxPetWidth);
         if (Math.Abs(targetWidth - _currentPetWidth) < 0.5) return;
 
-        // 身体底部保持不动：先记下窗口底边，改完尺寸再把底边贴回去
-        var bottomEdge = Top + Height;
+        // 缩放时钉住桌宠本体的底边：因为它不是窗口底边（下方还可能有输入框），
+        // 所以必须用「桌宠底边」而不是「窗口底边」来补偿。
+        var petBottom = Top + BubbleSlotHeight + PetImage.ActualHeight;
         _currentPetWidth = targetWidth;
         ApplyPetScale();
-        UpdateLayoutForBubble(_bubbleVisible);
-        Top = bottomEdge - Height;
-        ClampIntoWorkArea();
+        Top = petBottom - BubbleSlotHeight - PetImage.ActualHeight;
 
         // 关键：标记「确实拖动过」，松手时才不会把这次拖拽当成右键单击而弹出菜单
         _resizeMoved = true;
@@ -1367,12 +1624,10 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
         // 滚轮微调大小：比右键拖拽更精细，属于新增的便利操作
         if (Keyboard.Modifiers != ModifierKeys.None) return;
 
-        var bottomEdge = Top + Height;
+        var petBottom = Top + BubbleSlotHeight + PetImage.ActualHeight;
         _currentPetWidth = Math.Clamp(_currentPetWidth + Math.Sign(e.Delta) * 10, MinPetWidth, MaxPetWidth);
         ApplyPetScale();
-        UpdateLayoutForBubble(_bubbleVisible);
-        Top = bottomEdge - Height;
-        ClampIntoWorkArea();
+        Top = petBottom - BubbleSlotHeight - PetImage.ActualHeight;
         e.Handled = true;
     }
     private void ShowContextMenu()
@@ -1390,7 +1645,7 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
         {
             foreach (var app in Config.QuickApps)
             {
-                var item = new MenuItem { Header = $"🚀 {app.Name}" };
+                var item = new MenuItem { Header = $"➤ {app.Name}" };
                 var captured = app;
                 item.Click += (_, _) => LaunchQuickApp(captured);
                 menu.Items.Add(item);
@@ -1399,19 +1654,19 @@ public partial class PetWindow : Window, IPetHost, ITrayHost
         }
 
         // 2) 管理台入口
-        AddMenu(menu, "💬 历史对话面板", () => OpenPanel(DashboardPage.ChatHistory));
-        AddMenu(menu, "🍃 自动冒泡记录", () => OpenPanel(DashboardPage.BubbleHistory));
-        AddMenu(menu, "⚙️ 设定修改", () => OpenPanel(DashboardPage.Settings));
+        AddMenu(menu, "❝ 历史对话面板", () => OpenPanel(DashboardPage.ChatHistory));
+        AddMenu(menu, "❀ 自动冒泡记录", () => OpenPanel(DashboardPage.BubbleHistory));
+        AddMenu(menu, "⚙ 设定修改", () => OpenPanel(DashboardPage.Settings));
         AddMenu(menu, "⏰ 提醒事项", () => OpenPanel(DashboardPage.Reminders));
-        AddMenu(menu, "🔔 报时设置", () => OpenPanel(DashboardPage.Chime));
-        AddMenu(menu, "🚀 快捷启动设置", () => OpenPanel(DashboardPage.QuickApps));
+        AddMenu(menu, "♪ 报时设置", () => OpenPanel(DashboardPage.Chime));
+        AddMenu(menu, "➤ 快捷启动设置", () => OpenPanel(DashboardPage.QuickApps));
 
         menu.Items.Add(new Separator());
-        AddMenu(menu, "🔄 重置位置与置顶", ResetPosition);
-        AddMenu(menu, "📖 使用说明", () => OpenPanel(DashboardPage.Help));
+        AddMenu(menu, "↻ 重置位置与置顶", ResetPosition);
+        AddMenu(menu, "❖ 使用说明", () => OpenPanel(DashboardPage.Help));
 
         menu.Items.Add(new Separator());
-        AddMenu(menu, "❌ 退出应用", Shutdown);
+        AddMenu(menu, "✖ 退出应用", Shutdown);
 
         menu.IsOpen = true;
     }

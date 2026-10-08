@@ -6,14 +6,14 @@
              Foreground="{StaticResource TextBrush}">
     <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="18,16,18,24">
         <StackPanel>
-            <TextBlock Text="⚙️ 系统设置" Style="{StaticResource PageTitle}" />
+            <TextBlock Text="⚙ 系统设置" Style="{StaticResource PageTitle}" />
             <TextBlock Style="{StaticResource HintText}"
                        Text="改动后点击底部「保存并应用」，桌宠会立刻使用新设置，无需重启。" />
 
             <!-- ============ 模型接入 ============ -->
             <Border Style="{StaticResource Card}" Margin="0,14,0,0">
                 <StackPanel>
-                    <TextBlock Text="🤖 大模型接入" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Text="✦ 大模型接入" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
 
                     <TextBlock Text="API Key" Style="{StaticResource HintText}" />
                     <TextBox x:Name="ApiKeyBox" Style="{StaticResource FieldBox}" Margin="0,3,0,0" />
@@ -32,7 +32,7 @@
                     <TextBlock Text="主人昵称" Style="{StaticResource HintText}" Margin="0,10,0,0" />
                     <TextBox x:Name="UserNameBox" Style="{StaticResource FieldBox}" Margin="0,3,0,0" />
 
-                    <Button Content="🧪 测试连接" Style="{StaticResource GhostButton}" Width="120"
+                    <Button Content="✦ 测试连接" Style="{StaticResource GhostButton}" Width="120"
                             HorizontalAlignment="Left" Margin="0,12,0,0" Click="OnTestConnection" />
                     <TextBlock x:Name="TestResultText" Style="{StaticResource HintText}" Margin="0,6,0,0" />
                 </StackPanel>
@@ -41,7 +41,7 @@
             <!-- ============ 外观与交互 ============ -->
             <Border Style="{StaticResource Card}" Margin="0,14,0,0">
                 <StackPanel>
-                    <TextBlock Text="🎨 外观与交互" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Text="✿ 外观与交互" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
 
                     <TextBlock Text="显示层级" Style="{StaticResource HintText}" />
                     <ComboBox x:Name="LevelCombo" Style="{StaticResource FieldCombo}" Margin="0,3,0,0">
@@ -84,22 +84,22 @@
             <!-- ============ 记忆与冒泡 ============ -->
             <Border Style="{StaticResource Card}" Margin="0,14,0,0">
                 <StackPanel>
-                    <TextBlock Text="🧠 记忆与自动冒泡" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Text="❋ 记忆与自动冒泡" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
 
                     <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="💬 对话历史最多保留" VerticalAlignment="Center" />
+                        <TextBlock Text="❝ 对话历史最多保留" VerticalAlignment="Center" />
                         <TextBox x:Name="MaxChatBox" Style="{StaticResource FieldBox}" Width="70" Margin="8,0" />
                         <TextBlock Text="条" VerticalAlignment="Center" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                        <TextBlock Text="🍃 冒泡记录最多保留" VerticalAlignment="Center" />
+                        <TextBlock Text="❀ 冒泡记录最多保留" VerticalAlignment="Center" />
                         <TextBox x:Name="MaxBubbleBox" Style="{StaticResource FieldBox}" Width="70" Margin="8,0" />
                         <TextBlock Text="条" VerticalAlignment="Center" />
                     </StackPanel>
 
                     <StackPanel Orientation="Horizontal" Margin="0,8,0,0">
-                        <TextBlock Text="🔗 每次对话关联最近" VerticalAlignment="Center" />
+                        <TextBlock Text="⚘ 每次对话关联最近" VerticalAlignment="Center" />
                         <TextBox x:Name="ContextBox" Style="{StaticResource FieldBox}" Width="70" Margin="8,0" />
                         <TextBlock Text="轮历史（不能超过上面的对话条数）" VerticalAlignment="Center" />
                     </StackPanel>
@@ -118,7 +118,7 @@
             <!-- ============ 开机自启动 ============ -->
             <Border Style="{StaticResource Card}" Margin="0,14,0,0">
                 <StackPanel>
-                    <TextBlock Text="🚀 开机自启动" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
+                    <TextBlock Text="➤ 开机自启动" Style="{StaticResource SectionTitle}" Margin="0,0,0,4" />
                     <TextBlock Style="{StaticResource HintText}"
                                Text="两种方式二选一即可。注册表方式写入 HKCU\...\Run；快捷方式方式写入「启动」文件夹，兼容性更好。" />
 
@@ -128,7 +128,7 @@
                               Content="方式二：创建启动文件夹快捷方式" />
 
                     <StackPanel Orientation="Horizontal" Margin="0,10,0,0">
-                        <Button Content="🔄 刷新当前状态" Style="{StaticResource GhostButton}" Click="OnRefreshAutostart" />
+                        <Button Content="↻ 刷新当前状态" Style="{StaticResource GhostButton}" Click="OnRefreshAutostart" />
                     </StackPanel>
                     <TextBlock x:Name="AutostartStateText" Style="{StaticResource HintText}" Margin="0,8,0,0" />
                 </StackPanel>
@@ -136,13 +136,13 @@
 
             <!-- ============ 底部操作 ============ -->
             <StackPanel Orientation="Horizontal" Margin="0,18,0,0">
-                <Button Content="💾 保存并应用" Style="{StaticResource PrimaryButton}" Width="150" Height="38"
+                <Button Content="✎ 保存并应用" Style="{StaticResource PrimaryButton}" Width="150" Height="38"
                         Click="OnSave" />
-                <Button Content="↩️ 放弃修改" Style="{StaticResource GhostButton}" Width="120" Height="38"
+                <Button Content="↺ 放弃修改" Style="{StaticResource GhostButton}" Width="120" Height="38"
                         Margin="12,0,0,0" Click="OnRevert" />
-                <Button Content="🧹 恢复出厂人设与语录" Style="{StaticResource GhostButton}" Width="190" Height="38"
+                <Button Content="❃ 恢复出厂人设与语录" Style="{StaticResource GhostButton}" Width="190" Height="38"
                         Margin="12,0,0,0" Click="OnRestoreDefaults" />
-                <Button Content="📂 打开配置目录" Style="{StaticResource GhostButton}" Width="140" Height="38"
+                <Button Content="▤ 打开配置目录" Style="{StaticResource GhostButton}" Width="140" Height="38"
                         Margin="12,0,0,0" Click="OnOpenConfigFolder" />
             </StackPanel>
         </StackPanel>
